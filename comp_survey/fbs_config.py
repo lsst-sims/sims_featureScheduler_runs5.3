@@ -25,7 +25,6 @@ from rubin_scheduler.site_models import Almanac
 import lsst_surveys as lsst_surveys
 import roman_surveys as roman_surveys
 import too_surveys as too_surveys
-
 from survey_start import SURVEY_START_MJD
 
 

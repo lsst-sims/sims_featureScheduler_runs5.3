@@ -37,6 +37,7 @@ from lsst.ts.fbs.utils.maintel.lsst_surveys import (
     U_NEXP,
 )
 from rubin_scheduler.data import get_data_dir
+
 from fbs_config_lsst_survey_block_419 import SURVEY_START_MJD
 
 
