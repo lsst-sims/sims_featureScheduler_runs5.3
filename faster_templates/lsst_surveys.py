@@ -1,0 +1,1 @@
+../comp_survey/lsst_surveys.py
