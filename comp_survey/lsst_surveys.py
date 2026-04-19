@@ -1149,6 +1149,7 @@ def generate_blobs(
     u_nexp: int = U_NEXP,
     n_obs_template: dict | None = None,
     pair_time: float = 33.0,
+    max_pair_time: float = 40.,
     season: float = 365.25,
     season_start_hour: float = -4.0,
     season_end_hour: float = 2.0,
@@ -1415,6 +1416,8 @@ def generate_blobs(
                 nexp=nexp,
                 detailers=detailer_list,
                 check_scheduled=True,
+                note_block_size=True,
+                max_pair_time=max_pair_time,
                 **blob_survey_params,
             )
         )

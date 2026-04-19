@@ -367,6 +367,7 @@ def get_scheduler() -> tuple[int, CoreScheduler]:
             min_rot=np.min(camera_rot_limits), max_rot=np.max(camera_rot_limits)
         )
     )
+    too_detailers.append(detailers.BandSortDetailer())
     too_detailers.append(detailers.LabelRegionsAndDDFs())
     # Let's make a footprint to follow up ToO events
     too_footprint = np.where(footprints_hp["r"] > 0, 1.0, np.nan)
