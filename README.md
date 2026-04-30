@@ -19,14 +19,14 @@ v5.3 - ToO surveys with improved detailers for coverage plus bugfix for more ToO
 v5.0 and v5.3 - no footprint changes
 
 v5.0 - start date Nov 1, 2025
-v5.3 - start date June 15, 2026 (old scheduled downtime??)
+v5.3 - start date June 15, 2026 
 
 
 v5.0 - 22 weeks (2 weeks per year) scheduled downtime, UnscheduledDowntimeMoreY1Data unscheduled downtime (70% to 99% over Y1)
 
 v5.3 - new downtime
 New planned downtime - 46 weeks of block scheduled downtime + 18 weeks of single night engineering time
-Unscheduled downtime - 80% rising to 97% after Y2 for short periods of downtime + old 21 weeks of unscheduled downtime
+Unscheduled downtime - 80% rising to ~97% (or so) after Y2 for short periods of downtime + old 21 weeks of unscheduled downtime
 
 v5.0 - slew performance 40% TMA + 3s settle
 v5.3 - slew performance 20% TMA + 3s settle (+scatter?), moving to 20% TMA + 1.5s settle after Y1 + reduced scatter
