@@ -7,13 +7,25 @@ import numpy as np
 import numpy.typing as npt
 import rubin_scheduler
 from rubin_scheduler.scheduler import sim_runner
-from rubin_scheduler.scheduler.model_observatory import ModelObservatory, tma_movement
+from rubin_scheduler.scheduler.model_observatory import ModelObservatory
 from rubin_scheduler.scheduler.schedulers import CoreScheduler, SimpleBandSched
 from rubin_scheduler.scheduler.targetofo import gen_all_events
 from rubin_scheduler.scheduler.utils import ObservationArray
-from rubin_scheduler.utils import DEFAULT_NSIDE
+from rubin_scheduler.utils import DEFAULT_NSIDE, mjd2dayobs
+from lsst_survey_sim.lsst_support import survey_times
 
 from fbs_config import SURVEY_START_MJD, get_scheduler
+
+EXPECTED_WAIT_SETTLE = 3.0
+CURRENT_TMA_DEFAULT = {
+    "azimuth_maxspeed": 2.0,
+    "azimuth_accel": 2.0,
+    "azimuth_jerk": 8.0,
+    "altitude_maxspeed": 2.0,
+    "altitude_accel": 2.0,
+    "altitude_jerk": 8.0,
+    "settle_time": EXPECTED_WAIT_SETTLE,
+}
 
 
 def set_run_info(
@@ -53,17 +65,36 @@ def make_observatory(
     nside=DEFAULT_NSIDE,
     survey_start_mjd=SURVEY_START_MJD,
     sim_to_o=None,
-    tma_performance=40.0,
     readtime: float = 3.07,
-    band_changetime: float = 140.0,
+    band_changetime: float = 120.0,
 ):
-    observatory = ModelObservatory(
-        nside=nside, mjd_start=survey_start_mjd, sim_to_o=sim_to_o
+
+    survey_info = survey_times(
+        downtime_start_day_obs=int(mjd2dayobs(survey_start_mjd)),
+        new_downtime_ndays=3700,
+        random_seed=55,
+        minutes_after_sunset12=0,
+        early_dome_closure=0,
+        add_downtime=True,
+        real_downtime=False,
+        visits=None,
+        survey_start_mjd=survey_start_mjd,
     )
 
-    tma_kwargs = tma_movement(percent=tma_performance)
+    observatory = ModelObservatory(
+        nside=nside,
+        mjd_start=survey_start_mjd,
+        sim_to_o=sim_to_o,
+        downtimes=survey_info["downtimes"],
+    )
+
+    tma_kwargs = CURRENT_TMA_DEFAULT
     observatory.setup_telescope(**tma_kwargs)
     observatory.setup_camera(band_changetime=band_changetime, readtime=readtime)
+    # Remove close-loop optics iterations
+    observatory.observatory.setup_optics(
+        cl_delay=[0.0, 0.0], cl_altlimit=[0.0, 9.0, 90.0]
+    )
 
     return observatory
 
