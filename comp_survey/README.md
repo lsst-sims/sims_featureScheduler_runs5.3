@@ -2,11 +2,12 @@
 Changes from v5.2
 
 * moving deep DDF season out of year 1 (to free up dark time for templates)
-* Increasing number of desired template images (inside science radius) to 6 from 4
+* Increasing number of desired template images (inside science radius) to 5 from 4
 * modifying template tier to have multiple area + hour angle thresholds
 * removing 15 min pair tier
 * 33 min pair tier should be able to contract if needed to respect scheduled observations and twilight time
 * updates to what is recorded in scheduler_note field for pair_33s (so we can see if it dynamically changed blob size to expand/contract to fill time)
+* survey start date to June 15, 2026
 
 The 15 min pairs were about 12% of visits before, Half those went over to being pair_33s and the other half went to greedy.
 

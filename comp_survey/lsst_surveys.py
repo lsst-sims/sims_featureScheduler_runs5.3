@@ -463,7 +463,7 @@ def gen_template_surveys(
     seeing_fwhm_max = seeing_limit_by_dec(zenith_fwhm_limit=seeing_fwhm_max)
 
     if n_obs_template is None:
-        n_obs_template = {"u": 6, "g": 6, "r": 6, "i": 6, "z": 6, "y": 6}
+        n_obs_template = {"u": 5, "g": 5, "r": 5, "i": 5, "z": 5, "y": 5}
 
     if blob_survey_params is None:
         blob_survey_params = BLOB_SURVEY_PARAMS_DEFAULTS
