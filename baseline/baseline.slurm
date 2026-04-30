@@ -22,7 +22,7 @@
 
 ## Set up the evironment
 source ~/anaconda3/etc/profile.d/conda.sh
-conda activate rubin12
+conda activate rubin13
 export OPENBLAS_NUM_THREADS=1
 
 python baseline.py
