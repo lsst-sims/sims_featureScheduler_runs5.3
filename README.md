@@ -38,3 +38,64 @@ Requested sims:
 * rolling after year 2 + new perf
 * desi + new perf
 * template tier with shorter exposure 20s + new perf
+
+
+==== 
+
+New downtime: 
+survey_info = lsst_survey_sim.survey_times(
+    downtime_start_day_obs: int,
+    new_downtime_ndays: float = 365.0,
+    random_seed: int = 55,
+    minutes_after_sunset12: float = 0,
+    early_dome_closure: float = 0,
+    add_downtime: bool = True,
+    real_downtime: bool = False,
+    visits: pd.DataFrame | None = None,
+    survey_start_mjd: float = SURVEY_START_MJD,
+) -> dict:
+
+downtime_start_day_obs = dayobs of start of survey (use one of our functions for time to dayobs)
+new_downtime_ndays = 3700
+minutes_after_sunset12 = 0  (it's actually ~15 right now; alternatively use 10 for Y1 and 0 after)
+early_dome_close = 0
+add_downtime = True
+real_downtime = False
+visits = None
+survey_start_mjd = survey_start_mjd 
+
+survey_info['downtimes'] => into model observatory
+
+(replaces downtimes from ScheduledDowntimeData and UnscheduledDowntimeDataXX)
+
+observatory kinematic model setup
+
+EXPECTED_WAIT_SETTLE = 3.0
+CURRENT_TMA_DEFAULT = {
+    "azimuth_maxspeed": 2.0,
+    "azimuth_accel": 2.0,
+    "azimuth_jerk": 8.0,
+    "altitude_maxspeed": 2.0,
+    "altitude_accel": 2.0,
+    "altitude_jerk": 8.0,
+    "settle_time": EXPECTED_WAIT_SETTLE,
+}
+
+tma = CURRENT_TMA_DEFAULT
+tma["settle_time"] = expected_wait_settle
+observatory.setup_telescope(**tma)
+
+# Set up camera with band changetime
+observatory.setup_camera(band_changetime=120, readtime=3.07)
+# Remove close-loop optics iterations
+observatory.observatory.setup_optics(cl_delay=[0.0, 0.0], cl_altlimit=[0.0, 9.0, 90.0])
+
+
+Anomalous Overhead Function for scatter
+run_sim anomalous overhead 
+lsst_survey_sim.SlewScatter()
+
+============
+
+
+
