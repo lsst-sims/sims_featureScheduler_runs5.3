@@ -1,1 +1,1 @@
-../comp_survey/lsst_ddf_gen_block_419.py
+../baseline/lsst_ddf_gen_block_419.py

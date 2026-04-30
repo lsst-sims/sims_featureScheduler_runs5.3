@@ -1,1 +1,1 @@
-../comp_survey/fbs_config_lsst_survey_block_419.py
+../baseline/fbs_config_lsst_survey_block_419.py

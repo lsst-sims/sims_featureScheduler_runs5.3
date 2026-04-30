@@ -1,1 +1,1 @@
-../comp_survey/lsst_surveys.py
+../baseline/lsst_surveys.py
