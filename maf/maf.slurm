@@ -3,7 +3,7 @@
 #SBATCH --account=rubin:developers      # Account name
 #SBATCH --partition=milano
 #
-#SBATCH --job-name=maf52
+#SBATCH --job-name=maf53
 #SBATCH --output=output-%j.txt
 #SBATCH --error=output-%j.txt
 #
@@ -13,7 +13,7 @@
 #SBATCH --mem-per-cpu=25g
 #
 #SBATCH --time=3-14:10:00
-#SBATCH --chdir=/sdf/data/rubin/shared/fbs_sims/sims_featureScheduler_runs5.2/maf_stage
+#SBATCH --chdir=/sdf/data/rubin/shared/fbs_sims/sims_featureScheduler_runs5.3/maf
 #SBATCH --mail-user=yoachim@uw.edu
 #
 ##turn on e-mail notification
