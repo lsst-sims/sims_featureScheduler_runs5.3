@@ -67,11 +67,12 @@ def make_observatory(
     sim_to_o=None,
     readtime: float = 3.07,
     band_changetime: float = 120.0,
+    new_downtime_ndays=3700,
 ):
 
     survey_info = survey_times(
         downtime_start_day_obs=int(mjd2dayobs(survey_start_mjd)),
-        new_downtime_ndays=3700,
+        new_downtime_ndays=new_downtime_ndays,
         random_seed=55,
         minutes_after_sunset12=0,
         early_dome_closure=0,
@@ -180,7 +181,8 @@ if __name__ == "__main__":
     too_scale = 1.0
     sim_ToOs, event_table = gen_all_events(scale=too_scale, nside=nside)
 
-    observatory = make_observatory(sim_to_o=sim_ToOs)
+    observatory = make_observatory(sim_to_o=sim_ToOs,
+                                   new_downtime_ndays=args.survey_length)
 
     observatory, scheduler, observations = run_sched(
         scheduler,
