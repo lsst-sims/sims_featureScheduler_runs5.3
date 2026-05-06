@@ -12,7 +12,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=40g
 #
-#SBATCH --time=2-14:10:00
+#SBATCH --time=3-14:10:00
 #SBATCH --chdir=/sdf/data/rubin/shared/fbs_sims/sims_featureScheduler_runs5.3/baseline
 #SBATCH --mail-user=yoachim@uw.edu
 #
@@ -25,7 +25,7 @@ source ~/anaconda3/etc/profile.d/conda.sh
 conda activate rubin13
 export OPENBLAS_NUM_THREADS=1
 
-python baseline.py
+python baseline.py --survey_length 4018
 
 
 # rm maf.sh
