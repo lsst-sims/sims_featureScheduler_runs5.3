@@ -25,7 +25,8 @@ source ~/anaconda3/etc/profile.d/conda.sh
 conda activate rubin14
 export OPENBLAS_NUM_THREADS=1
 
-python p14_baseline.py --survey_length 4018
+#python p14_baseline.py --survey_length 4018
+python baseline.py
 
 
 # rm maf.sh
