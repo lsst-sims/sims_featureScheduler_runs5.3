@@ -37,6 +37,7 @@ def set_run_info(
     for arg in sys.argv:
         exec_command += " " + arg
     extra_info["exec command"] = exec_command
+    extra_info["python version"] = sys.version
     try:
         extra_info["git hash"] = subprocess.check_output(["git", "rev-parse", "HEAD"])
     except subprocess.CalledProcessError:
