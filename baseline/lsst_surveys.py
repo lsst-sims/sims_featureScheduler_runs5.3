@@ -830,7 +830,6 @@ def blob_for_long(
                 detailers=detailer_list,
                 science_program=science_program,
                 observation_reason=observation_reason,
-                note_block_size=True,
                 **blob_survey_params,
             )
         )
