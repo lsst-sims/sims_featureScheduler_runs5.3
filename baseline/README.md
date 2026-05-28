@@ -7,3 +7,8 @@ Adding the block size to the triplet blob section as well.
 running for 11 years. See a big boost in things partly because there are 
 no DDF observations in the 11th year. Now added ToOs.
 
+going up to 5.3.1:
+
+* Changes for speeding up sims.
+    * Have scripted surveys ignore most things.
+
