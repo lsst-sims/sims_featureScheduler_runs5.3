@@ -9,7 +9,7 @@ def desi_footprint(nside=DEFAULT_NSIDE):
 
     ra, dec = _hpid2_ra_dec(nside, np.arange(hp.nside2npix(nside)))
     coord = SkyCoord(ra=ra * u.rad, dec=dec * u.rad, frame="icrs")
-    galb = coord.galactic.b.deg
+    galb = coord.galactic.b.rad
 
     desi_sgc = np.where(
         (dec <= np.radians(4))

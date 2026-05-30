@@ -257,6 +257,17 @@ def get_scheduler() -> tuple[int, CoreScheduler]:
         detailers.TruncatePreTwiDetailer(),
     ]
 
+    ddf_ignore = [
+          "blob",
+                  "pair",
+                  "long",
+                  "greedy",
+                  "templates",
+                  "twilight",
+                  "ToO",
+                  "DD:RGES",
+              ]
+
     ddfs = [
         ScriptedSurvey(
             lsst_surveys.safety_masks(**safety_mask_params_ddf),
@@ -264,6 +275,7 @@ def get_scheduler() -> tuple[int, CoreScheduler]:
             detailers=detailer_list,
             survey_name="deep drilling",
             before_twi_check=False,
+            ignore_obs=ddf_ignore,
         )
     ]
     ddfs[0].set_script(obs_array)
@@ -375,6 +387,21 @@ def get_scheduler() -> tuple[int, CoreScheduler]:
     )
 
     # Define Roman scripted surveys
+
+    roman_ignore = [
+            "blob",
+            "pair",
+            "long",
+            "greedy",
+            "templates",
+            "twilight",
+            "ToO",
+            "DD:COSMOS",
+            "DD:ECDFS",
+            "DD:EDFS",
+            "DD:ELIASS",
+            "DD:XMM",
+        ]
     roman_micro = [
         roman_surveys.gen_roman_on_season(
             nside=nside,
@@ -386,6 +413,7 @@ def get_scheduler() -> tuple[int, CoreScheduler]:
             nexps=nexp,
             science_program=science_program,
             safety_mask_params=safety_mask_params,
+            ignore_obs=roman_ignore,
         ),
         roman_surveys.gen_roman_off_season(
             nside=nside,
@@ -397,6 +425,7 @@ def get_scheduler() -> tuple[int, CoreScheduler]:
             nexps=nexp,
             science_program=science_program,
             safety_mask_params=safety_mask_params,
+            ignore_obs=roman_ignore,
         ),
     ]
 

@@ -169,7 +169,7 @@ if __name__ == "__main__":
     out_dir = args.out_dir
     fileroot, extra_info = set_run_info(
         dbroot=dbroot,
-        file_end="v5.3.0_",
+        file_end="v5.3.1_",
         out_dir=out_dir,
     )
     years = np.round(args.survey_length / 365.25)
