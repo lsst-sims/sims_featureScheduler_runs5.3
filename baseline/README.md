@@ -15,3 +15,5 @@ going up to 5.3.1:
 nominally those should not have changed anything, but looks like 5.3.0 and 5.3.1 are not identical. But really really close. 
 
 
+going up to 5.3.2:
+* Trying out flushing the queue when new ToO alerts come in
