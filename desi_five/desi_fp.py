@@ -56,7 +56,7 @@ def desi_five_slice(nside=DEFAULT_NSIDE, nsplit=5):
 
     ra, dec = _hpid2_ra_dec(nside, np.arange(hp.nside2npix(nside)))
 
-    dec_order = np.argsort(dec[indx])
+    dec_order = np.argsort(dec[indx])[::-1]
 
     ordered_indx = indx[dec_order]
     result = np.zeros((np.size(dec), nsplit))
