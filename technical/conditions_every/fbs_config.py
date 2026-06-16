@@ -27,9 +27,6 @@ import roman_surveys as roman_surveys
 import too_surveys as too_surveys
 from survey_start import SURVEY_START_MJD
 
-from desi_fp import desi_five_slice
-
-
 
 def generate_qm() -> BaseQueueManager:
     """Generate a QueueManager object."""
@@ -258,16 +255,15 @@ def get_scheduler() -> tuple[int, CoreScheduler]:
     ]
 
     ddf_ignore = [
-          "blob",
-                  "pair",
-                  "long",
-                  "greedy",
-                  "templates",
-                  "twilight",
-                  "ToO",
-                  "DD:RGES",
-              ]
-
+        "blob",
+        "pair",
+        "long",
+        "greedy",
+        "templates",
+        "twilight",
+        "ToO",
+        "DD:RGES",
+    ]
     ddfs = [
         ScriptedSurvey(
             lsst_surveys.safety_masks(**safety_mask_params_ddf),
@@ -279,44 +275,6 @@ def get_scheduler() -> tuple[int, CoreScheduler]:
         )
     ]
     ddfs[0].set_script(obs_array)
-
-    # For DESI footprint
-    desi_footprints = desi_five_slice(nside=nside)
-
-    desi = []
-
-    for i, desi_fp in enumerate(desi_footprints.T):
-        fp_obj = Footprint(SURVEY_START_MJD, sun_ra_start)
-        for bandname in "ugriz":
-            fp_obj.set_footprint(bandname, desi_fp)
-
-        desi += lsst_surveys.gen_desi_surveys(
-            footprints=fp_obj,
-            nside=nside,
-            band1s=["u", "g"],
-            dark_only=["u", "g"],
-            exptime=exptime,
-            nexp=nexp,
-            u_exptime=u_exptime,
-            u_nexp=u_nexp,
-            area_required=2.0,
-            n_obs_max=30,
-            only_after_night=365.25*i
-        )
-
-        desi += lsst_surveys.gen_desi_surveys(
-            footprints=fp_obj,
-            nside=nside,
-            band1s=["r", "i", "z"],
-            dark_only=["u", "g"],
-            exptime=exptime,
-            nexp=nexp,
-            u_exptime=u_exptime,
-            u_nexp=u_nexp,
-            area_required=2.0,
-            n_obs_max=40,
-            only_after_night=365.25*i
-        )
 
     # Define the greedy surveys (single-visit per call)
     greedy = lsst_surveys.gen_greedy_surveys(
@@ -363,21 +321,20 @@ def get_scheduler() -> tuple[int, CoreScheduler]:
     )
 
     # Define Roman scripted surveys
-
     roman_ignore = [
-            "blob",
-            "pair",
-            "long",
-            "greedy",
-            "templates",
-            "twilight",
-            "ToO",
-            "DD:COSMOS",
-            "DD:ECDFS",
-            "DD:EDFS",
-            "DD:ELIASS",
-            "DD:XMM",
-        ]
+        "blob",
+        "pair",
+        "long",
+        "greedy",
+        "templates",
+        "twilight",
+        "ToO",
+        "DD:COSMOS",
+        "DD:ECDFS",
+        "DD:EDFS",
+        "DD:ELIASS",
+        "DD:XMM",
+    ]
     roman_micro = [
         roman_surveys.gen_roman_on_season(
             nside=nside,
@@ -457,7 +414,6 @@ def get_scheduler() -> tuple[int, CoreScheduler]:
         roman_micro,
         ddfs,
         template_surveys,
-        desi,
         long_gaps,
         blobs,
         neo_micro,
