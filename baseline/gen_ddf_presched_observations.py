@@ -38,7 +38,7 @@ from lsst.ts.fbs.utils.maintel.lsst_surveys import (
 )
 from rubin_scheduler.data import get_data_dir
 
-from fbs_config_lsst_survey_block_419 import SURVEY_START_MJD
+from fbs_config import SURVEY_START_MJD
 
 
 def define_ddf_seq() -> pd.DataFrame:
