@@ -217,7 +217,7 @@ def gen_roman_off_season(
     exptimes: dict | float = EXPTIME,
     science_program: str = SCIENCE_PROGRAM,
     safety_mask_params: dict | None = None,
-    ignore_obs: list | None = None
+    ignore_obs: list | None = None,
 ) -> FieldSurvey:
     """Generate a survey configured to observe the Roman field(s) outside
     of the 'on' seasons (during 'off' seasons).

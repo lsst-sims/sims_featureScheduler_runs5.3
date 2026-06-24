@@ -181,8 +181,9 @@ if __name__ == "__main__":
     too_scale = 1.0
     sim_ToOs, event_table = gen_all_events(scale=too_scale, nside=nside)
 
-    observatory = make_observatory(sim_to_o=sim_ToOs,
-                                   new_downtime_ndays=args.survey_length)
+    observatory = make_observatory(
+        sim_to_o=sim_ToOs, new_downtime_ndays=args.survey_length
+    )
 
     observatory, scheduler, observations = run_sched(
         scheduler,

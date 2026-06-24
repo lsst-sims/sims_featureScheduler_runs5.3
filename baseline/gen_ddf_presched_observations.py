@@ -79,7 +79,7 @@ def define_ddf_seq() -> pd.DataFrame:
         },
     ]
 
-    shallow_squences = [
+    deep_squences = [
         {
             "u": 3,
             "season_length": 225,
@@ -114,7 +114,7 @@ def define_ddf_seq() -> pd.DataFrame:
         },
     ]
 
-    deep_sequences = [
+    ultra_deep_sequences = [
         {
             "u": 8,
             "season_length": 225,
@@ -159,7 +159,7 @@ def define_ddf_seq() -> pd.DataFrame:
         },
     ]
 
-    euclid_deep_seq = [
+    euclid_ultra_deep_seq = [
         {
             "u": 30,
             "season_length": 225,
@@ -211,7 +211,7 @@ def define_ddf_seq() -> pd.DataFrame:
         "EDFS_a": [0, 10],
     }
 
-    shallow_seasons = {
+    deep_seasons = {
         "COSMOS": [0, 4, 5, 6, 7, 8, 9, 10],
         "XMM_LSS": [1, 2, 3, 5, 6, 7, 8, 9],
         "ELAISS1": [1, 2, 3, 4, 6, 7, 8, 9],
@@ -219,7 +219,7 @@ def define_ddf_seq() -> pd.DataFrame:
         "EDFS_a": [1, 3, 4, 5, 6, 7, 8, 9],
     }
 
-    deep_seasons = {
+    ultra_deep_seasons = {
         "COSMOS": [1, 2, 3],
         "XMM_LSS": [4],
         "ELAISS1": [5],
@@ -245,22 +245,6 @@ def define_ddf_seq() -> pd.DataFrame:
                     row[key] = seq[key]
                 dataframes.append(pd.DataFrame.from_dict(row, orient="index").T)
 
-    for ddf_name in shallow_seasons:
-        for season in shallow_seasons[ddf_name]:
-            dict_for_df = {
-                "ddf_name": ddf_name,
-                "season": season,
-                "even_odd": "None",
-            }
-            for key in "ugrizy":
-                dict_for_df[key] = 0
-
-            for seq in shallow_squences:
-                row = copy.copy(dict_for_df)
-                for key in seq:
-                    row[key] = seq[key]
-                dataframes.append(pd.DataFrame.from_dict(row, orient="index").T)
-
     for ddf_name in deep_seasons:
         for season in deep_seasons[ddf_name]:
             dict_for_df = {
@@ -270,14 +254,30 @@ def define_ddf_seq() -> pd.DataFrame:
             }
             for key in "ugrizy":
                 dict_for_df[key] = 0
+
+            for seq in deep_squences:
+                row = copy.copy(dict_for_df)
+                for key in seq:
+                    row[key] = seq[key]
+                dataframes.append(pd.DataFrame.from_dict(row, orient="index").T)
+
+    for ddf_name in ultra_deep_seasons:
+        for season in ultra_deep_seasons[ddf_name]:
+            dict_for_df = {
+                "ddf_name": ddf_name,
+                "season": season,
+                "even_odd": "None",
+            }
+            for key in "ugrizy":
+                dict_for_df[key] = 0
             if ddf_name == "EDFS_a":
-                for seq in euclid_deep_seq:
+                for seq in euclid_ultra_deep_seq:
                     row = copy.copy(dict_for_df)
                     for key in seq:
                         row[key] = seq[key]
                     dataframes.append(pd.DataFrame.from_dict(row, orient="index").T)
             else:
-                for seq in deep_sequences:
+                for seq in ultra_deep_sequences:
                     row = copy.copy(dict_for_df)
                     for key in seq:
                         row[key] = seq[key]
