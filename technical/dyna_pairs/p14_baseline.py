@@ -37,7 +37,6 @@ def set_run_info(
     for arg in sys.argv:
         exec_command += " " + arg
     extra_info["exec command"] = exec_command
-    extra_info["python version"] = sys.version
     try:
         extra_info["git hash"] = subprocess.check_output(["git", "rev-parse", "HEAD"])
     except subprocess.CalledProcessError:
@@ -171,7 +170,7 @@ if __name__ == "__main__":
     out_dir = args.out_dir
     fileroot, extra_info = set_run_info(
         dbroot=dbroot,
-        file_end="v5.3.3_",
+        file_end="v5.3.0_",
         out_dir=out_dir,
     )
     years = np.round(args.survey_length / 365.25)
@@ -180,12 +179,7 @@ if __name__ == "__main__":
     nside, scheduler = get_scheduler()
 
     too_scale = 1.0
-    sim_ToOs, event_table = gen_all_events(
-        scale=too_scale,
-        nside=nside,
-        mjd_start=SURVEY_START_MJD,
-        mjd_end=SURVEY_START_MJD + args.survey_length,
-    )
+    sim_ToOs, event_table = gen_all_events(scale=too_scale, nside=nside)
 
     observatory = make_observatory(
         sim_to_o=sim_ToOs, new_downtime_ndays=args.survey_length

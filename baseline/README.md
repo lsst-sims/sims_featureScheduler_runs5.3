@@ -17,3 +17,7 @@ nominally those should not have changed anything, but looks like 5.3.0 and 5.3.1
 
 going up to 5.3.2:
 * Trying out flushing the queue when new ToO alerts come in
+
+going up to 5.3.3:
+* bug fix on dynamic pairs
+
