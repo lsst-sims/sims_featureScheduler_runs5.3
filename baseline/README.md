@@ -20,4 +20,5 @@ going up to 5.3.2:
 
 going up to 5.3.3:
 * bug fix on dynamic pairs
+* lower scheduled_respect kwarg to 15 so we get shorter pairs.
 
