@@ -83,6 +83,9 @@ def make_observatory(
         survey_start_mjd=survey_start_mjd,
     )
 
+    
+    import pdb ; pdb.set_trace()
+
     observatory = ModelObservatory(
         nside=nside,
         mjd_start=survey_start_mjd,
@@ -190,9 +193,6 @@ if __name__ == "__main__":
     observatory = make_observatory(
         sim_to_o=sim_ToOs, new_downtime_ndays=args.survey_length
     )
-
-    
-    import pdb ; pdb.set_trace()
 
     observatory, scheduler, observations = run_sched(
         scheduler,
