@@ -21,4 +21,7 @@ going up to 5.3.2:
 going up to 5.3.3:
 * bug fix on dynamic pairs
 * lower scheduled_respect kwarg to 15 so we get shorter pairs.
+* might have been a slight change in downtime swapping back to main from a branch of lsst_survey_sim
+
+
 
