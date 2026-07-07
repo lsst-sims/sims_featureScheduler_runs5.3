@@ -117,6 +117,8 @@ def run_sched(
     n_visit_limit = None
     fs = SimpleBandSched(illum_limit=illum_limit)
 
+    import pdb ; pdb.set_trace()
+
     observatory, scheduler, observations = sim_runner(
         observatory,
         scheduler,
