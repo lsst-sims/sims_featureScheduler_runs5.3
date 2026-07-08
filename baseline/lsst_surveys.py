@@ -390,6 +390,7 @@ def gen_template_surveys(
     blob_survey_params: dict | None = None,
     safety_mask_params: dict | None = None,
     night_max: int = 365,
+    median_cloud_limit: float = 0.1,
 ) -> list[BlobSurvey]:
     """Coherent area surveys (BlobSurvey with single visit) that
     are intended to acquire template visits in a convenient yet
@@ -457,6 +458,8 @@ def gen_template_surveys(
         pair_time.
     safety_mask_params : `dict` or None
         A dictionary of additional kwargs to mass to the standard safety masks.
+    median_cloud_limit : `float`
+        The median cloud extinction limit where templates shouldn't be attempted.
     """
 
     # Bump the seeing limit up to be dec dependent
@@ -561,6 +564,9 @@ def gen_template_surveys(
                 0.0,
             )
         )
+
+        # Do not attempt if cloudy
+        bfs.append((bf.CloudedOutMapBasisFunction(median_cloud_limit=median_cloud_limit), 0))
 
         # Add safety masks
         masks = safety_masks(**safety_mask_params)
