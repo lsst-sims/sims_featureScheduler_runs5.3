@@ -30,6 +30,7 @@ __all__ = (
 )
 
 import copy
+import warnings
 from typing import Any
 
 import healpy as hp
@@ -566,7 +567,19 @@ def gen_template_surveys(
         )
 
         # Do not attempt if cloudy
-        bfs.append((bf.CloudedOutMapBasisFunction(median_cloud_limit=median_cloud_limit), 0))
+        try:
+            bfs.append(
+                (
+                    bf.CloudedOutMapBasisFunction(
+                        median_cloud_limit=median_cloud_limit
+                    ),
+                    0,
+                )
+            )
+        except ImportError:
+            warnings.warn(
+                "CloudedOutMapBasisFunction not available, I might try to observe templates in cloudy conditions"
+            )
 
         # Add safety masks
         masks = safety_masks(**safety_mask_params)
