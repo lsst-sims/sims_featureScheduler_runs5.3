@@ -576,7 +576,7 @@ def gen_template_surveys(
                     0,
                 )
             )
-        except ImportError:
+        except AttributeError:
             warnings.warn(
                 "CloudedOutMapBasisFunction not available, I might try to observe templates in cloudy conditions"
             )
