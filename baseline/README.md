@@ -23,5 +23,6 @@ going up to 5.3.3:
 * lower scheduled_respect kwarg to 15 so we get shorter pairs.
 * might have been a slight change in downtime swapping back to main from a branch of lsst_survey_sim
 
-
+going to 5.3.4:
+* Making all bands available to greedy survey. Prevents a handful of filter changes, but seems to be positive beyond that.
 

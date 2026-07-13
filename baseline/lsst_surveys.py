@@ -994,7 +994,7 @@ def gen_long_gaps_survey(
 
 def gen_greedy_surveys(
     nside: int = DEFAULT_NSIDE,
-    bands: list[str] = ["r", "i", "z", "y"],
+    bands: list[str] = ["u", "g", "r", "i", "z", "y"],
     ignore_obs: list[str] = ["DD", "twilight_near_sun", "ToO"],
     camera_rot_limits: tuple[float, float] = CAMERA_ROT_LIMITS,
     exptime: float = EXPTIME,
