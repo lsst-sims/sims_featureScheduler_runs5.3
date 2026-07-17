@@ -996,6 +996,7 @@ def gen_long_gaps_survey(
 def gen_greedy_surveys(
     nside: int = DEFAULT_NSIDE,
     bands: list[str] = ["u", "g", "r", "i", "z", "y"],
+    dark_only: list[str] = ["u", "g"],
     ignore_obs: list[str] = ["DD", "twilight_near_sun", "ToO"],
     camera_rot_limits: tuple[float, float] = CAMERA_ROT_LIMITS,
     exptime: float = EXPTIME,
@@ -1123,6 +1124,10 @@ def gen_greedy_surveys(
                 0,
             )
         )
+
+        if bandname in dark_only:
+            bfs.append((bf.NotTwilightBasisFunction(), 0.0))
+            bfs.append((bf.MoonAltLimitBasisFunction(alt_limit=-5), 0.0))
 
         masks = safety_masks(nside=nside, shadow_minutes=shadow_minutes)
         for m in masks:
