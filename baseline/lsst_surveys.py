@@ -618,6 +618,7 @@ def gen_template_surveys(
                 additional_masks=additional_masks,
                 additional_area_limits=additional_area_limits,
                 area_required=area_required,
+                note_block_size=True,
                 **blob_survey_params,
             )
         )

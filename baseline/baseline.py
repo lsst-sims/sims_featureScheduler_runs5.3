@@ -184,7 +184,7 @@ if __name__ == "__main__":
         scale=too_scale,
         nside=nside,
         mjd_start=SURVEY_START_MJD,
-        mjd_end=SURVEY_START_MJD + args.survey_length,
+        mjd_end=SURVEY_START_MJD + np.max([365.25*10, args.survey_length]),
     )
 
     observatory = make_observatory(
