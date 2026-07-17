@@ -26,3 +26,6 @@ going up to 5.3.3:
 going to 5.3.4:
 * Making all bands available to greedy survey. Prevents a handful of filter changes, but seems to be positive beyond that.
 
+going to 5.3.5:
+* more dynamic pair fixes
+* no blue greedy in bright time
