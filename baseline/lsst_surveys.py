@@ -561,6 +561,7 @@ def gen_template_surveys(
                     n_max=n_obs_template[bandname],
                     bandname=bandname,
                     seeing_fwhm_max=seeing_fwhm_max,
+                    reset_per_season=False,
                 ),
                 0.0,
             )

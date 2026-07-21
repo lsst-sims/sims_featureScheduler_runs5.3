@@ -43,7 +43,7 @@ def generate_qm() -> BaseQueueManager:
     return qm
 
 
-def get_scheduler() -> tuple[int, CoreScheduler]:
+def get_scheduler(dust_limit=0.199) -> tuple[int, CoreScheduler]:
     """Construct the LSST survey scheduler.
 
     The parameters are not accessible when calling as 'config'.
@@ -137,7 +137,7 @@ def get_scheduler() -> tuple[int, CoreScheduler]:
     ei_night_pattern = pattern_dict[ei_night_pattern]
 
     # Generate footprint over the sky
-    sky = CurrentAreaMap(nside=nside)
+    sky = CurrentAreaMap(nside=nside, dust_limit=dust_limit)
     footprints_hp_array, labels = sky.return_maps()
     # Identify pixels for rolling
     roll_indx = np.where((labels == "lowdust") | (labels == "virgo"))[0]
