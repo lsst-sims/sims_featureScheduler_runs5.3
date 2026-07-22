@@ -6,13 +6,13 @@ import sys
 import numpy as np
 import numpy.typing as npt
 import rubin_scheduler
+from lsst_survey_sim.lsst_support import survey_times
 from rubin_scheduler.scheduler import sim_runner
 from rubin_scheduler.scheduler.model_observatory import ModelObservatory
 from rubin_scheduler.scheduler.schedulers import CoreScheduler, SimpleBandSched
 from rubin_scheduler.scheduler.targetofo import gen_all_events
 from rubin_scheduler.scheduler.utils import ObservationArray
 from rubin_scheduler.utils import DEFAULT_NSIDE, mjd2dayobs
-from lsst_survey_sim.lsst_support import survey_times
 
 from fbs_config import SURVEY_START_MJD, get_scheduler
 
@@ -171,20 +171,20 @@ if __name__ == "__main__":
     out_dir = args.out_dir
     fileroot, extra_info = set_run_info(
         dbroot=dbroot,
-        file_end="v5.3.2_",
+        file_end="v5.3.5_",
         out_dir=out_dir,
     )
     years = np.round(args.survey_length / 365.25)
     filename = os.path.join(fileroot + "%iyrs.db" % years)
 
-    nside, scheduler = get_scheduler()
+    nside, scheduler = get_scheduler(for_simulation=True)
 
     too_scale = 1.0
     sim_ToOs, event_table = gen_all_events(
         scale=too_scale,
         nside=nside,
         mjd_start=SURVEY_START_MJD,
-        mjd_end=SURVEY_START_MJD + args.survey_length,
+        mjd_end=SURVEY_START_MJD + np.max([365.25*10, args.survey_length]),
     )
 
     observatory = make_observatory(
