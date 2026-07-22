@@ -179,7 +179,7 @@ if __name__ == "__main__":
     years = np.round(args.survey_length / 365.25)
     filename = os.path.join(fileroot + "%iyrs.db" % years)
 
-    nside, scheduler = get_scheduler(args.dust_limit)
+    nside, scheduler = get_scheduler(for_simulation=True, dust_limit=args.dust_limit)
 
     too_scale = 1.0
     sim_ToOs, event_table = gen_all_events(

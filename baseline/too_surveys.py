@@ -42,6 +42,7 @@ def gen_too_surveys(
     n_snaps: int = NEXP,
     science_program: str = SCIENCE_PROGRAM,
     safety_mask_params: dict | None = None,
+    for_simulation: bool = False,
 ) -> list[ToOScriptedSurvey]:
     """Generate a list of ToO surveys to follow up
     events passed in Conditions.
@@ -62,6 +63,8 @@ def gen_too_surveys(
         Metadata to identify the science program for the visit.
     safety_mask_params : `dict` or None
         A dictionary of additional kwargs to mass to the standard safety masks.
+    for simulation : `bool`
+        Are we running a sim, then set Solar System to update mjd.
 
     Returns
     -------
@@ -377,6 +380,11 @@ def gen_too_surveys(
     nvis = [1] * 3
     exptimes = [EXPTIME] * 3
 
+    if for_simulation:
+        update_mjd0 = True
+    else:
+        update_mjd0 = False
+
     too_surveys.append(
         ToOScriptedSurvey(
             masks,
@@ -395,7 +403,7 @@ def gen_too_surveys(
             science_program=science_program,
             flushtime=3.0,
             n_snaps=n_snaps,
-            update_mjd0=True,
+            update_mjd0=update_mjd0,
         )
     )
 
@@ -422,6 +430,7 @@ def gen_too_surveys(
             science_program=science_program,
             flushtime=3.0,
             n_snaps=n_snaps,
+            update_mjd0=update_mjd0
         )
     )
 
