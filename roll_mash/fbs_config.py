@@ -17,7 +17,6 @@ from rubin_scheduler.scheduler.utils import (
     ScheduledObservationArray,
 )
 from rubin_scheduler.site_models import Almanac
-from fudge_rolling import make_rolling_footprints
 
 # import lsst.ts.fbs.utils.maintel.lsst_surveys as lsst_surveys
 # import lsst.ts.fbs.utils.maintel.roman_surveys as roman_surveys
@@ -26,6 +25,7 @@ import lsst_surveys as lsst_surveys
 import roman_surveys as roman_surveys
 import too_surveys as too_surveys
 from survey_start import SURVEY_START_MJD
+from fudge_rolling import make_rolling_footprints
 
 
 def generate_qm() -> BaseQueueManager:
@@ -43,7 +43,7 @@ def generate_qm() -> BaseQueueManager:
     return qm
 
 
-def get_scheduler() -> tuple[int, CoreScheduler]:
+def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
     """Construct the LSST survey scheduler.
 
     The parameters are not accessible when calling as 'config'.
@@ -191,7 +191,7 @@ def get_scheduler() -> tuple[int, CoreScheduler]:
     # This hash is provided by the script that
     # generates the pre-computed data. Execute it and paste
     # the provided value here.
-    expected_hex_digest = "58950b2"
+    expected_hex_digest = "8b042bc"
     pre_comp_file = (
         pathlib.Path(get_data_dir())
         / "scheduler"
@@ -254,6 +254,16 @@ def get_scheduler() -> tuple[int, CoreScheduler]:
         detailers.TruncatePreTwiDetailer(),
     ]
 
+    ddf_ignore = [
+        "blob",
+        "pair",
+        "long",
+        "greedy",
+        "templates",
+        "twilight",
+        "ToO",
+        "DD:RGES",
+    ]
     ddfs = [
         ScriptedSurvey(
             lsst_surveys.safety_masks(**safety_mask_params_ddf),
@@ -261,6 +271,7 @@ def get_scheduler() -> tuple[int, CoreScheduler]:
             detailers=detailer_list,
             survey_name="deep drilling",
             before_twi_check=False,
+            ignore_obs=ddf_ignore,
         )
     ]
     ddfs[0].set_script(obs_array)
@@ -310,6 +321,20 @@ def get_scheduler() -> tuple[int, CoreScheduler]:
     )
 
     # Define Roman scripted surveys
+    roman_ignore = [
+        "blob",
+        "pair",
+        "long",
+        "greedy",
+        "templates",
+        "twilight",
+        "ToO",
+        "DD:COSMOS",
+        "DD:ECDFS",
+        "DD:EDFS",
+        "DD:ELIASS",
+        "DD:XMM",
+    ]
     roman_micro = [
         roman_surveys.gen_roman_on_season(
             nside=nside,
@@ -321,6 +346,7 @@ def get_scheduler() -> tuple[int, CoreScheduler]:
             nexps=nexp,
             science_program=science_program,
             safety_mask_params=safety_mask_params,
+            ignore_obs=roman_ignore,
         ),
         roman_surveys.gen_roman_off_season(
             nside=nside,
@@ -332,6 +358,7 @@ def get_scheduler() -> tuple[int, CoreScheduler]:
             nexps=nexp,
             science_program=science_program,
             safety_mask_params=safety_mask_params,
+            ignore_obs=roman_ignore,
         ),
     ]
 
@@ -379,6 +406,7 @@ def get_scheduler() -> tuple[int, CoreScheduler]:
         n_snaps=nexp,
         science_program=science_program,
         safety_mask_params=safety_mask_params,
+        for_simulation=for_simulation,
     )
 
     # Arrange the surveys in tiers.
