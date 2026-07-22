@@ -143,7 +143,7 @@ def gen_too_surveys(
             observation_reason="too_gw_case_b_c",
             science_program=science_program,
             flushtime=48,
-            n_snaps=long_exp_nsnaps,
+            n_snaps=n_snaps,
         )
     )
 
@@ -172,7 +172,7 @@ def gen_too_surveys(
             observation_reason="too_gw_case_d_e",
             science_program=science_program,
             flushtime=48,
-            n_snaps=long_exp_nsnaps,
+            n_snaps=n_snaps,
             event_gen_detailers=None,
         )
     )
@@ -211,7 +211,7 @@ def gen_too_surveys(
             observation_reason="too_gw_case_large",
             science_program=science_program,
             flushtime=48,
-            n_snaps=long_exp_nsnaps,
+            n_snaps=n_snaps,
             event_gen_detailers=None,
         )
     )
@@ -325,7 +325,7 @@ def gen_too_surveys(
             observation_reason="too_lensed_bns_b",
             science_program=science_program,
             flushtime=48.0,
-            n_snaps=long_exp_nsnaps,
+            n_snaps=n_snaps,
         )
     )
 

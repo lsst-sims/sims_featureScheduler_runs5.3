@@ -31,3 +31,4 @@ going to 5.3.5:
 * no blue greedy in bright time
 * not resetting templates per season
 * fixing some lost SSO ToO events
+* fix n_snaps on GW ToO
