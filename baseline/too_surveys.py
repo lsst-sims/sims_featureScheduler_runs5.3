@@ -395,6 +395,7 @@ def gen_too_surveys(
             science_program=science_program,
             flushtime=3.0,
             n_snaps=n_snaps,
+            update_mjd0=True,
         )
     )
 
