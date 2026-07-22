@@ -46,7 +46,7 @@ def generate_qm() -> BaseQueueManager:
     return qm
 
 
-def get_scheduler() -> tuple[int, CoreScheduler]:
+def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
     """Construct the LSST survey scheduler.
 
     The parameters are not accessible when calling as 'config'.
@@ -194,7 +194,7 @@ def get_scheduler() -> tuple[int, CoreScheduler]:
     # This hash is provided by the script that
     # generates the pre-computed data. Execute it and paste
     # the provided value here.
-    expected_hex_digest = "58950b2"
+    expected_hex_digest = "8b042bc"
     pre_comp_file = (
         pathlib.Path(get_data_dir())
         / "scheduler"
@@ -475,6 +475,7 @@ def get_scheduler() -> tuple[int, CoreScheduler]:
         n_snaps=nexp,
         science_program=science_program,
         safety_mask_params=safety_mask_params,
+        for_simulation=for_simulation,
     )
 
     # Arrange the surveys in tiers.

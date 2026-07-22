@@ -30,6 +30,7 @@ __all__ = (
 )
 
 import copy
+import warnings
 from typing import Any
 
 import healpy as hp
@@ -411,6 +412,7 @@ def gen_template_surveys(
     blob_survey_params: dict | None = None,
     safety_mask_params: dict | None = None,
     night_max: int = 365,
+    median_cloud_limit: float = 0.1,
 ) -> list[BlobSurvey]:
     """Coherent area surveys (BlobSurvey with single visit) that
     are intended to acquire template visits in a convenient yet
@@ -478,6 +480,8 @@ def gen_template_surveys(
         pair_time.
     safety_mask_params : `dict` or None
         A dictionary of additional kwargs to mass to the standard safety masks.
+    median_cloud_limit : `float`
+        The median cloud extinction limit where templates shouldn't be attempted.
     """
 
     # Bump the seeing limit up to be dec dependent
@@ -578,10 +582,26 @@ def gen_template_surveys(
                     n_max=n_obs_template[bandname],
                     bandname=bandname,
                     seeing_fwhm_max=seeing_fwhm_max,
+                    reset_per_season=False,
                 ),
                 0.0,
             )
         )
+
+        # Do not attempt if cloudy
+        try:
+            bfs.append(
+                (
+                    bf.CloudedOutMapBasisFunction(
+                        median_cloud_limit=median_cloud_limit
+                    ),
+                    0,
+                )
+            )
+        except AttributeError:
+            warnings.warn(
+                "CloudedOutMapBasisFunction not available, I might try to observe templates in cloudy conditions"
+            )
 
         # Add safety masks
         masks = safety_masks(**safety_mask_params)
@@ -620,6 +640,7 @@ def gen_template_surveys(
                 additional_masks=additional_masks,
                 additional_area_limits=additional_area_limits,
                 area_required=area_required,
+                note_block_size=True,
                 **blob_survey_params,
             )
         )
@@ -864,7 +885,7 @@ def blob_for_long(
     night_pattern: list[bool] = [True, True],
     time_after_twi: float = 30.0,
     blob_names: list[str] = [],
-    scheduled_respect: float = 30.0,
+    scheduled_respect: float = 15.0,
     science_program: str = SCIENCE_PROGRAM,
     observation_reason: str | None = None,
     blob_survey_params: dict | None = None,
@@ -972,7 +993,6 @@ def blob_for_long(
     if n_obs_template is None:
         n_obs_template = {"u": 3, "g": 3, "r": 3, "i": 3, "z": 3, "y": 3}
 
-    times_needed = [pair_time, pair_time * 2]
     for bandname, bandname2 in zip(band1s, band2s):
         detailer_list = []
         detailer_list.append(
@@ -1016,11 +1036,7 @@ def blob_for_long(
                 0.0,
             )
         )
-        if bandname2 is None:
-            time_needed = times_needed[0]
-        else:
-            time_needed = times_needed[1]
-        bfs.append((bf.TimeToTwilightBasisFunction(time_needed=time_needed), 0.0))
+        bfs.append((bf.TimeToTwilightBasisFunction(time_needed=scheduled_respect), 0.0))
         bfs.append((bf.NotTwilightBasisFunction(), 0.0))
         bfs.append((bf.AfterEveningTwiBasisFunction(time_after=time_after_twi), 0.0))
         bfs.append(
@@ -1213,7 +1229,8 @@ def gen_long_gaps_survey(
 
 def gen_greedy_surveys(
     nside: int = DEFAULT_NSIDE,
-    bands: list[str] = ["r", "i", "z", "y"],
+    bands: list[str] = ["u", "g", "r", "i", "z", "y"],
+    dark_only: list[str] = ["u", "g"],
     ignore_obs: list[str] = ["DD", "twilight_near_sun", "ToO"],
     camera_rot_limits: tuple[float, float] = CAMERA_ROT_LIMITS,
     exptime: float = EXPTIME,
@@ -1342,6 +1359,10 @@ def gen_greedy_surveys(
             )
         )
 
+        if bandname in dark_only:
+            bfs.append((bf.NotTwilightBasisFunction(), 0.0))
+            bfs.append((bf.MoonAltLimitBasisFunction(alt_limit=-5), 0.0))
+
         masks = safety_masks(nside=nside, shadow_minutes=shadow_minutes)
         for m in masks:
             bfs.append((m, 0))
@@ -1396,7 +1417,7 @@ def generate_blobs(
     good_seeing: dict = {"g": 3, "r": 3, "i": 3},
     good_seeing_weight: float = 3.0,
     survey_start: float = SURVEY_START_MJD,
-    scheduled_respect: float = 45.0,
+    scheduled_respect: float = 15.0,
     science_program: str = SCIENCE_PROGRAM,
     blob_survey_params: dict | None = None,
     safety_mask_params: dict | None = None,
@@ -1472,7 +1493,7 @@ def generate_blobs(
         counting good seeing images within a season).
     scheduled_respect : `float`
         Ensure that blobs don't start within this many minutes of scheduled
-        observations (from a ScriptedSurvey).
+        observations (from a ScriptedSurvey). Also used for start of twilight.
     science_program : `str`
         The science_program to use for visits from these surveys.
     blob_survey_params : `dict` or None
@@ -1507,7 +1528,6 @@ def generate_blobs(
 
     surveys = []
 
-    times_needed = [pair_time, pair_time * 2]
     for bandname, bandname2 in zip(band1s, band2s):
         detailer_list = []
         detailer_list.append(
@@ -1603,12 +1623,9 @@ def generate_blobs(
                     )
                 )
 
-        time_needed = times_needed[1]
-        if bandname2 is None:
-            time_needed = times_needed[0]
         # Make sure we respect scheduled observations
         bfs.append((bf.TimeToScheduledBasisFunction(time_needed=scheduled_respect), 0))
-        bfs.append((bf.TimeToTwilightBasisFunction(time_needed=time_needed), 0.0))
+        bfs.append((bf.TimeToTwilightBasisFunction(time_needed=scheduled_respect), 0.0))
         bfs.append((bf.NotTwilightBasisFunction(), 0.0))
 
         # Add safety masks
@@ -1631,7 +1648,7 @@ def generate_blobs(
         observation_reason = f"pairs_{bandname}"
         if bandname2 is not None:
             observation_reason += f"{bandname2}"
-        observation_reason += f"_{pair_time:.1f}"
+        observation_reason += f"_{pair_time:.1f}_{max_pair_time:.1f}"
 
         surveys.append(
             BlobSurvey(
