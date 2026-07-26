@@ -1,0 +1,3 @@
+python baseline.py
+python baseline.py --survey_length 4018
+python baseline.py --survey_length 730
