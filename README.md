@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21684709.svg)](https://doi.org/10.5281/zenodo.21684709)
+
 # sims_featureScheduler_runs5.3
 The ever expanding simulations
 
