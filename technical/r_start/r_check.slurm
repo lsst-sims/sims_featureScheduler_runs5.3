@@ -3,12 +3,12 @@
 #SBATCH --account=rubin:developers      # Account name
 #SBATCH --partition=milano
 #
-#SBATCH --job-name=baseline53
+#SBATCH --job-name=rc53
 #SBATCH --output=output-%j.txt
 #SBATCH --error=output-%j.txt
 #
 #SBATCH --nodes=1                       # Number of nodes
-#SBATCH --ntasks=3
+#SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=40g
 #
