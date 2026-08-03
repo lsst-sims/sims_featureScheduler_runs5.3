@@ -110,7 +110,7 @@ def gen_too_surveys(
             too_types_to_follow=["GW_case_A"],
             survey_name="ToO, GW_case_A",
             flushtime=48.0,
-            n_snaps=long_exp_nsnaps,
+            n_snaps=n_snaps,
             # Update target_name to match the alert event ID
             target_name_base="GW_case_A",
             observation_reason="too_gw_case_a",
