@@ -33,7 +33,7 @@ class ScaleTimeEarlyDetailer(detailers.BaseDetailer):
     def __init__(self, bandname='r', max_time=30., end_night=730):
         self.bandname = bandname
         self.max_time_sec = max_time
-        self.end_nigt = end_night
+        self.end_night = end_night
 
     def __call__(self, observation_array, conditions):
 
