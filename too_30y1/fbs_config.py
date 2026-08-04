@@ -44,7 +44,7 @@ class ScaleTimeEarlyDetailer(detailers.BaseDetailer):
             if in_band.size > 0:
                 for obs in observation_array[in_band]:
                     n_replace = np.ceil(obs["exptime"] / self.max_time_sec)
-                    replacement = ObservationArray(n_replace)
+                    replacement = ObservationArray(int(n_replace))
                     # This should copy and broadcast all the old values
                     replacement += obs
                     # Replace the exposure time with the new maximum
