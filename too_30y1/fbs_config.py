@@ -37,6 +37,10 @@ class ScaleTimeEarlyDetailer(detailers.BaseDetailer):
 
     def __call__(self, observation_array, conditions):
 
+        # Something is passing in a list, so need to fix that
+        if isinstance(observation_array, list):
+            observation_array = np.concatenate(observation_array)
+
         if conditions.night <= self.end_night:
             in_band = np.where(observation_array["band"] == self.bandname)[0]
             out_band = np.where(observation_array["band"] != self.bandname)[0]
