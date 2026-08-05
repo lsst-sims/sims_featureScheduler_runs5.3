@@ -44,18 +44,23 @@ class ScaleTimeEarlyDetailer(detailers.BaseDetailer):
             if in_band.size > 0:
                 for obs in observation_array[in_band]:
                     n_replace = np.ceil(obs["exptime"] / self.max_time_sec)
-                    replacement = ObservationArray(int(n_replace))
-                    # There should be a way to do this without loop
-                    for key in replacement.dtype.names:
-                        replacement[key] = obs[key]
-                    # Replace the exposure time with the new maximum
-                    replacement["exptime"] = self.max_time_sec
+                    if n_replace > 1:
+                        replacement = ObservationArray(int(n_replace))
+                        # There should be a way to do this without loop
+                        for key in replacement.dtype.names:
+                            replacement[key] = obs[key]
+                        # Replace the exposure time with the new maximum
+                        replacement["exptime"] = self.max_time_sec
+                    else:
+                        replacement = obs
                     new_exptimes_arrays.append(replacement)
             else:
                 return observation_array
-
             result = np.concatenate([observation_array[out_band]] + new_exptimes_arrays)
             return result
+        # Pass through if after end_night
+        else:
+            return observation_array
 
 
 def generate_qm() -> BaseQueueManager:
