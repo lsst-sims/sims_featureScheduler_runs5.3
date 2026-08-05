@@ -39,7 +39,11 @@ class ScaleTimeEarlyDetailer(detailers.BaseDetailer):
 
         # Something is passing in a list, so need to fix that
         if isinstance(observation_array, list):
-            observation_array = np.concatenate(observation_array)
+            fixed_array = ObservationArray(len(observation_array))
+            for i, obs in enumerate(observation_array):
+                for key in fixed_array.dtype.names:
+                    fixed_array[i][key] = obs[key][0]
+            observation_array = fixed_array
 
         if conditions.night <= self.end_night:
             in_band = np.where(observation_array["band"] == self.bandname)[0]
@@ -48,15 +52,13 @@ class ScaleTimeEarlyDetailer(detailers.BaseDetailer):
             if in_band.size > 0:
                 for obs in observation_array[in_band]:
                     n_replace = np.ceil(obs["exptime"] / self.max_time_sec)
-                    if n_replace > 1:
-                        replacement = ObservationArray(int(n_replace))
-                        # There should be a way to do this without loop
-                        for key in replacement.dtype.names:
-                            replacement[key] = obs[key]
-                        # Replace the exposure time with the new maximum
-                        replacement["exptime"] = self.max_time_sec
-                    else:
-                        replacement = obs
+                    replacement = ObservationArray(int(n_replace))
+                    # There should be a way to do this without loop
+                    for key in replacement.dtype.names:
+                        replacement[key] = obs[key]
+                    # Replace the exposure time with the new maximum
+                    replacement["exptime"] = self.max_time_sec
+                    
                     new_exptimes_arrays.append(replacement)
             else:
                 return observation_array
