@@ -69,6 +69,7 @@ def make_observatory(
     readtime: float = 3.07,
     band_changetime: float = 120.0,
     new_downtime_ndays=3700,
+    cloud_offset_year: float = 7.,
 ):
 
     survey_info = survey_times(
@@ -88,6 +89,7 @@ def make_observatory(
         mjd_start=survey_start_mjd,
         sim_to_o=sim_to_o,
         downtimes=survey_info["downtimes"],
+        cloud_offset_year=cloud_offset_year,
     )
 
     tma_kwargs = CURRENT_TMA_DEFAULT

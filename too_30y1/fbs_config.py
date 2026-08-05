@@ -56,7 +56,12 @@ class ScaleTimeEarlyDetailer(detailers.BaseDetailer):
                     new_exptimes_arrays.append(replacement)
             else:
                 return observation_array
-            result = np.concatenate([observation_array[out_band]] + new_exptimes_arrays)
+            if (np.size(out_band) > 0) & (np.size(new_exptimes_arrays) > 0):
+                result = np.concatenate([observation_array[out_band]] + new_exptimes_arrays)
+            elif np.size(out_band) == 0:
+                result = new_exptimes_arrays
+            elif np.size(new_exptimes_arrays) == 0:
+                result = observation_array[out_band]
             return result
         # Pass through if after end_night
         else:
