@@ -37,7 +37,7 @@ def generate_qm() -> BaseQueueManager:
     # This should get zenith masked
     bf_list.append(bf.SlewtimeBasisFunction())
     # Any clouds that have rolled in
-    bf_list.append(bf.MapCloudBasisFunction())
+    bf_list.append(bf.MaskCloudMapBasisFunction())
     qm = BaseQueueManager(detailers=detailer_list, basis_functions=bf_list)
 
     return qm
