@@ -69,6 +69,7 @@ def make_observatory(
     readtime: float = 3.07,
     band_changetime: float = 120.0,
     new_downtime_ndays=3700,
+     cloud_offset_year: float = 7.
 ):
 
     survey_info = survey_times(
@@ -88,6 +89,7 @@ def make_observatory(
         mjd_start=survey_start_mjd,
         sim_to_o=sim_to_o,
         downtimes=survey_info["downtimes"],
+        cloud_offset_year=cloud_offset_year,
     )
 
     tma_kwargs = CURRENT_TMA_DEFAULT
@@ -173,7 +175,7 @@ if __name__ == "__main__":
     out_dir = args.out_dir
     fileroot, extra_info = set_run_info(
         dbroot=dbroot,
-        file_end="dust_%.3f_v5.3.5_" % args.dust_limit,
+        file_end="dust_%.3f_v5.3.6_" % args.dust_limit,
         out_dir=out_dir,
     )
     years = np.round(args.survey_length / 365.25)
