@@ -138,16 +138,19 @@ if __name__ == "__main__":
     out_dir = args.out_dir
     fileroot, extra_info = set_run_info(
         dbroot=dbroot,
-        file_end="v5.3.0_",
+        file_end="v5.3.6_",
         out_dir=out_dir,
     )
     years = np.round(args.survey_length / 365.25)
     filename = os.path.join(fileroot + "%iyrs.db" % years)
 
-    nside, scheduler = get_scheduler()
+    nside, scheduler = get_scheduler(for_simulation=True)
 
     too_scale = 1.0
-    sim_ToOs, event_table = gen_all_events(scale=too_scale, nside=nside)
+    sim_ToOs, event_table = gen_all_events(scale=too_scale, nside=nside,
+                                           mjd_start=SURVEY_START_MJD,
+                                           mjd_end=SURVEY_START_MJD + np.max([365.25*10, args.survey_length]),
+                                           )
 
     observatory = make_observatory(sim_to_o=sim_ToOs)
 

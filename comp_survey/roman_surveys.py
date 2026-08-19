@@ -77,6 +77,7 @@ def gen_roman_on_season(
     exptimes: dict | float = EXPTIME,
     science_program: str = SCIENCE_PROGRAM,
     safety_mask_params: dict | None = None,
+    ignore_obs: list | None = None,
 ) -> FieldSurvey:
     """Generate a survey configured to observe the Roman field(s) during an
     'on' season.
@@ -119,6 +120,9 @@ def gen_roman_on_season(
         (single exposure each band), every day while the RGES field
         is being observed by Roman.
     """
+    if ignore_obs is None:
+        ignore_obs = []
+
     if exptimes is None:
         exptimes = {}
         for key in nvisits:
@@ -196,6 +200,7 @@ def gen_roman_on_season(
         target_name=None,
         science_program=None,
         observation_reason=None,
+        ignore_obs=ignore_obs,
     )
     return survey
 
@@ -212,6 +217,7 @@ def gen_roman_off_season(
     exptimes: dict | float = EXPTIME,
     science_program: str = SCIENCE_PROGRAM,
     safety_mask_params: dict | None = None,
+    ignore_obs: list | None = None,
 ) -> FieldSurvey:
     """Generate a survey configured to observe the Roman field(s) outside
     of the 'on' seasons (during 'off' seasons).
@@ -254,6 +260,9 @@ def gen_roman_off_season(
         every third day while the RGES field is visible but not being
         observed by Roman.
     """
+    if ignore_obs is None:
+        ignore_obs = []
+
     if safety_mask_params is None:
         safety_mask_params = {}
         safety_mask_params["nside"] = nside
@@ -327,5 +336,6 @@ def gen_roman_off_season(
         target_name=None,
         science_program=None,
         observation_reason=None,
+        ignore_obs=ignore_obs,
     )
     return survey
