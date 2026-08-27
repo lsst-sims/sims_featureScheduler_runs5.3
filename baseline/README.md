@@ -33,9 +33,9 @@ going to 5.3.5:
 * fixing some lost SSO ToO events
 * fix n_snaps on GW ToO
 
-
-**Bleeding Edge, not yet final**
 going to 5.3.6: 
 * One more fixed n_snaps for GW case_A
 * Setting cloud offset year to 7
 
+**Bleeding Edge, not yet final**
+* Setting greedy survey to use any filter at start of night.

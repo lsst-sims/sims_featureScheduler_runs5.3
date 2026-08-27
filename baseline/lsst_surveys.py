@@ -1103,7 +1103,7 @@ def gen_greedy_surveys(
                 slewtime_weight=slewtime_weight,
                 stayband_weight=stayband_weight,
                 footprints=footprints,
-                strict=False,
+                strict=True,
             )
         )
 
