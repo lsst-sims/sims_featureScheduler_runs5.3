@@ -72,7 +72,7 @@ class CloudsFromDream(object):
 
         self.load_data(mjd)
 
-        in_time_indx = np.where((self.mjds > (mjd - self.time_limit) & (self.mjds <= mjd)))[0]
+        in_time_indx = np.where((self.mjds > (mjd - self.time_limit)) & (self.mjds <= mjd))[0]
         result = CloudMap()
         for indx in in_time_indx:
             result.add_frame(self.clouds_cleaned[indx], self.mjds[indx])
