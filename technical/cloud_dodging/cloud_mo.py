@@ -40,8 +40,18 @@ class CloudsFromDream(object):
         if day_obs != self.day_obs:
 
             sunset, sunrise = rn_dayobs.day_obs_sunset_sunrise(day_obs)
-            dd = self.endpoints['efd'].select_time_series("lsst.sal.DREAM.logevent_largeFileObjectAvailable", ["url"], sunset, sunrise)
-            dd = dd.query("url.str.contains('zps') and url.str.contains('hdf5')")
+            try:
+                dd = self.endpoints['efd'].select_time_series("lsst.sal.DREAM.logevent_largeFileObjectAvailable", ["url"], sunset, sunrise)
+                dd = dd.query("url.str.contains('zps') and url.str.contains('hdf5')")
+            except:
+                # Querry failed, just give up
+
+                # XXX--should prob throw a warning or something
+                self.mjds = np.array([])
+                self.clouds_cleaned = np.array([])
+                self.day_obs = day_obs
+                return
+
             mjds = []
             clouds_cleaned = []
 
