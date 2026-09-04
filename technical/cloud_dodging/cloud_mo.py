@@ -56,7 +56,10 @@ class CloudsFromDream(object):
                     dream[k] = h5f[k][::]
                     dream[k] = hp.reorder(dream[k], n2r=True)
                 mjds.append(Time(dream["time"]).mjd)
-                clouds_cleaned.append(dream["clouds_cleaned"])
+                try:
+                    clouds_cleaned.append(dream["clouds_cleaned"])
+                except:
+                    import pdb ; pdb.set_trace()
             self.mjds = np.array(mjds)
             self.clouds_cleaned = np.vstack(clouds_cleaned)
             self.day_obs = day_obs
