@@ -64,6 +64,7 @@ class CloudsFromDream(object):
                     mjds.append(Time(dream["time"]).mjd)
             self.mjds = np.array(mjds)
             self.clouds_cleaned = np.vstack(clouds_cleaned)
+            # Set so we know we have already loaded this day_obs
             self.day_obs = day_obs
 
     def __call__(self, mjd):
@@ -73,6 +74,10 @@ class CloudsFromDream(object):
         self.load_data(mjd)
 
         in_time_indx = np.where((self.mjds > (mjd - self.time_limit)) & (self.mjds <= mjd))[0]
+
+        if len(in_time_indx) == 0:
+            return None
+
         result = CloudMap()
         for indx in in_time_indx:
             result.add_frame(self.clouds_cleaned[indx], self.mjds[indx])
