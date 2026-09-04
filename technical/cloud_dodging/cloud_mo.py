@@ -55,11 +55,13 @@ class CloudsFromDream(object):
                 for k in list(h5f.keys()):
                     dream[k] = h5f[k][::]
                     dream[k] = hp.reorder(dream[k], n2r=True)
-                mjds.append(Time(dream["time"]).mjd)
-                try:
+                
+                if "clouds_cleaned" in dream.keys():
                     clouds_cleaned.append(dream["clouds_cleaned"])
-                except:
-                    import pdb ; pdb.set_trace()
+                    mjds.append(Time(dream["time"]).mjd)
+                elif "clouds" in dream.keys():
+                    clouds_cleaned.append(dream["clouds"])
+                    mjds.append(Time(dream["time"]).mjd)
             self.mjds = np.array(mjds)
             self.clouds_cleaned = np.vstack(clouds_cleaned)
             self.day_obs = day_obs
