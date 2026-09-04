@@ -55,7 +55,7 @@ class CloudsFromDream(object):
                 for k in list(h5f.keys()):
                     dream[k] = h5f[k][::]
                     dream[k] = hp.reorder(dream[k], n2r=True)
-                
+                # Looks like DREAM data format changed over time
                 if "clouds_cleaned" in dream.keys():
                     clouds_cleaned.append(dream["clouds_cleaned"])
                     mjds.append(Time(dream["time"]).mjd)
@@ -85,7 +85,7 @@ class CloudsFromDream(object):
         return result
 
 
-class CloudyModelObservarory(ModelObservatory):
+class CloudyModelObservatory(ModelObservatory):
     """Model Observatory that fills in cloud extinction with DREAM data
     """
 

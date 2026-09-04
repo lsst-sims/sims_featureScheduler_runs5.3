@@ -9,7 +9,7 @@ import rubin_scheduler
 from lsst_survey_sim.lsst_support import survey_times
 from rubin_scheduler.scheduler import sim_runner
 # from rubin_scheduler.scheduler.model_observatory import ModelObservatory
-from cloud_mo import CloudyModelObservarory as ModelObservatory
+from cloud_mo import CloudyModelObservatory as ModelObservatory
 from rubin_scheduler.scheduler.schedulers import CoreScheduler, SimpleBandSched
 from rubin_scheduler.scheduler.targetofo import gen_all_events
 from rubin_scheduler.scheduler.utils import ObservationArray
