@@ -27,7 +27,9 @@ export OPENBLAS_NUM_THREADS=1
 
 #python p14_baseline.py --survey_length 4018
 # python baseline.py
-cat cd.sh | parallel -j 2
+
+python no_dodge.py --survey_length 180 
+#cat cd.sh | parallel -j 2
 
 # rm maf.sh
 #  
