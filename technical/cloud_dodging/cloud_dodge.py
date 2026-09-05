@@ -89,8 +89,8 @@ def make_observatory(
         nside=nside,
         mjd_start=survey_start_mjd,
         sim_to_o=sim_to_o,
-        downtimes=survey_info["downtimes"],
-        cloud_offset_year=cloud_offset_year,
+        cloud_data="ideal",
+        downtimes="ideal",
     )
 
     tma_kwargs = CURRENT_TMA_DEFAULT
