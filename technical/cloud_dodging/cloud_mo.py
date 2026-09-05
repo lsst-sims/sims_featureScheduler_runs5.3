@@ -59,19 +59,22 @@ class CloudsFromDream(object):
                 uri = row.url
                 uri = lfa_data.usdf_lfa(uri, bucket="s3://lfa@")
                 resource = ResourcePath(uri)
-                h5f = h5py.File(io.BytesIO(resource.read()), mode="r")
-                dream = {}
-                dream['time'] = row.name
-                for k in list(h5f.keys()):
-                    dream[k] = h5f[k][::]
-                    dream[k] = hp.reorder(dream[k], n2r=True)
-                # Looks like DREAM data format changed over time
-                if "clouds_cleaned" in dream.keys():
-                    clouds_cleaned.append(dream["clouds_cleaned"])
-                    mjds.append(Time(dream["time"]).mjd)
-                elif "clouds" in dream.keys():
-                    clouds_cleaned.append(dream["clouds"])
-                    mjds.append(Time(dream["time"]).mjd)
+                try:
+                    h5f = h5py.File(io.BytesIO(resource.read()), mode="r")
+                    dream = {}
+                    dream['time'] = row.name
+                    for k in list(h5f.keys()):
+                        dream[k] = h5f[k][::]
+                        dream[k] = hp.reorder(dream[k], n2r=True)
+                    # Looks like DREAM data format changed over time
+                    if "clouds_cleaned" in dream.keys():
+                        clouds_cleaned.append(dream["clouds_cleaned"])
+                        mjds.append(Time(dream["time"]).mjd)
+                    elif "clouds" in dream.keys():
+                        clouds_cleaned.append(dream["clouds"])
+                        mjds.append(Time(dream["time"]).mjd)
+                except:
+                    pass
             self.mjds = np.array(mjds)
             self.clouds_cleaned = np.vstack(clouds_cleaned)
             # Set so we know we have already loaded this day_obs
