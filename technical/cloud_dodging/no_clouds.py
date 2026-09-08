@@ -84,15 +84,12 @@ def make_observatory(
         survey_start_mjd=survey_start_mjd,
     )
 
-    qm = BaseQueueManager(check_clouds=False)
-
     observatory = ModelObservatory(
         nside=nside,
         mjd_start=survey_start_mjd,
         sim_to_o=sim_to_o,
         cloud_data="ideal",
         downtimes="ideal",
-        queue_manager=qm,
     )
 
     tma_kwargs = CURRENT_TMA_DEFAULT
@@ -183,6 +180,10 @@ if __name__ == "__main__":
     filename = os.path.join(fileroot + "%iyrs.db" % years)
 
     nside, scheduler = get_scheduler(for_simulation=True)
+
+    # Clobber default QueueManager
+    qm = BaseQueueManager(check_clouds=False)
+    scheduler.queue_manager = qm
 
     too_scale = 1.0
     sim_ToOs, event_table = gen_all_events(
