@@ -9,7 +9,7 @@ import rubin_scheduler
 from lsst_survey_sim.lsst_support import survey_times
 from rubin_scheduler.scheduler import sim_runner
 from rubin_scheduler.scheduler.model_observatory import ModelObservatory
-from rubin_scheduler.scheduler.schedulers import CoreScheduler, SimpleBandSched
+from rubin_scheduler.scheduler.schedulers import CoreScheduler, SimpleBandSched, BaseQueueManager
 from rubin_scheduler.scheduler.targetofo import gen_all_events
 from rubin_scheduler.scheduler.utils import ObservationArray
 from rubin_scheduler.utils import DEFAULT_NSIDE, mjd2dayobs
@@ -84,12 +84,15 @@ def make_observatory(
         survey_start_mjd=survey_start_mjd,
     )
 
+    qm = BaseQueueManager(check_clouds=False)
+
     observatory = ModelObservatory(
         nside=nside,
         mjd_start=survey_start_mjd,
         sim_to_o=sim_to_o,
         cloud_data="ideal",
         downtimes="ideal",
+        queue_manager=qm,
     )
 
     tma_kwargs = CURRENT_TMA_DEFAULT

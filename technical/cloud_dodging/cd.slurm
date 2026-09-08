@@ -8,7 +8,7 @@
 #SBATCH --error=output-%j.txt
 #
 #SBATCH --nodes=1                       # Number of nodes
-#SBATCH --ntasks=2
+#SBATCH --ntasks=6
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=40g
 #
@@ -28,8 +28,7 @@ export OPENBLAS_NUM_THREADS=1
 #python p14_baseline.py --survey_length 4018
 # python baseline.py
 
-python no_dodge.py --survey_length 180 
-#cat cd.sh | parallel -j 2
+cat cd.sh | parallel -j 6
 
 # rm maf.sh
 #  
