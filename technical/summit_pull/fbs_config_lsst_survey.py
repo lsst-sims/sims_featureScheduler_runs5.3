@@ -32,7 +32,7 @@ import too_surveys
 import numpy as np
 import rubin_scheduler.scheduler.basis_functions as bf
 import rubin_scheduler.scheduler.detailers as detailers
-from lsst_surveys import safety_masks
+from lsst_surveys import standard_masks
 from rubin_scheduler.data import get_data_dir
 from rubin_scheduler.scheduler.schedulers import BaseQueueManager, CoreScheduler
 from rubin_scheduler.scheduler.surveys import ScriptedSurvey
@@ -284,7 +284,7 @@ def get_scheduler() -> tuple[int, CoreScheduler]:
 
     ddfs = [
         ScriptedSurvey(
-            safety_masks(**safety_mask_params_ddf),
+            standard_masks(**safety_mask_params_ddf),
             nside=nside,
             detailers=detailer_list,
             survey_name="deep drilling",
