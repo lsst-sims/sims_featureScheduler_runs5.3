@@ -26,9 +26,9 @@ import hashlib
 import os
 import pathlib
 
-import lsst_surveys 
-import roman_surveys 
-import too_surveys 
+import lsst_surveys
+import roman_surveys
+import too_surveys
 import numpy as np
 import rubin_scheduler.scheduler.basis_functions as bf
 import rubin_scheduler.scheduler.detailers as detailers
@@ -107,7 +107,7 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
     # Safety mask parameters - constraints on all survey pointings
     # Generally shadow_minutes value is set by the survey, but can
     # be set here as well (will be overwritten if too short for survey).
-    safety_mask_params = {
+    standard_mask_params = {
         "nside": nside,
         "wind_speed_maximum": 40,
         "apply_time_limited_shadow": False,
@@ -116,8 +116,8 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
         "max_az_sunrise": 255,
     }
 
-    safety_mask_params_ddf = copy.deepcopy(safety_mask_params)
-    safety_mask_params_ddf["shadow_minutes"] = 30
+    standard_mask_params_ddf = copy.deepcopy(standard_mask_params)
+    standard_mask_params_ddf["shadow_minutes"] = 30
 
     # General parameters for standard pairs (-80/80 default)
     camera_rot_limits = (-60.0, 60.0)
@@ -163,7 +163,6 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
         7: [True, True, False, False, False, False],
     }
     ei_night_pattern = pattern_dict[ei_night_pattern]
-    reverse_ei_night_pattern = [not val for val in ei_night_pattern]
 
     # Generate footprint over the sky
     sky = CurrentAreaMap(nside=nside)
@@ -212,13 +211,13 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
         night_pattern=gaps_night_pattern,
         science_program=science_program,
         blob_survey_params=blob_survey_params,
-        standard_mask_params=safety_mask_params,
+        standard_mask_params=standard_mask_params,
     )
 
     # This hash is provided by the script that
     # generates the pre-computed data. Execute it and paste
     # the provided value here.
-    expected_hex_digest = "d34127a"
+    expected_hex_digest = "d119324"
     pre_comp_file = (
         pathlib.Path(get_data_dir())
         / "scheduler"
@@ -283,7 +282,7 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
 
     ddfs = [
         ScriptedSurvey(
-            standard_masks(**safety_mask_params_ddf),
+            standard_masks(**standard_mask_params_ddf),
             nside=nside,
             detailers=detailer_list,
             survey_name="deep drilling",
@@ -300,7 +299,7 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
         u_exptime=u_exptime,
         footprints=footprints,
         science_program=science_program,
-        standard_mask_params=safety_mask_params,
+        standard_mask_params=standard_mask_params,
     )
 
     # Define the near-sun twilight microsurvey
@@ -315,7 +314,7 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
         n_repeat=ei_repeat,
         max_elong=ei_elong_req,
         science_program=science_program,
-        standard_mask_params=safety_mask_params,
+        standard_mask_params=standard_mask_params,
     )
 
     # Define the standard pairs during the night survey
@@ -329,7 +328,7 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
         survey_start=survey_start_mjd,
         science_program=science_program,
         blob_survey_params=blob_survey_params,
-        standard_mask_params=safety_mask_params,
+        standard_mask_params=standard_mask_params,
     )
 
     # Define Roman scripted surveys
@@ -342,7 +341,7 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
             camera_ddf_rot_per_visit=camera_ddf_rot_per_visit,
             exptimes=exptime,
             science_program=science_program,
-            standard_mask_params=safety_mask_params,
+            standard_mask_params=standard_mask_params,
         ),
         roman_surveys.gen_roman_off_season(
             nside=nside,
@@ -352,7 +351,7 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
             camera_ddf_rot_per_visit=camera_ddf_rot_per_visit,
             exptimes=exptime,
             science_program=science_program,
-            standard_mask_params=safety_mask_params,
+            standard_mask_params=standard_mask_params,
         ),
     ]
 
@@ -374,7 +373,7 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
         detailer_list=too_detailers,
         too_footprint=too_footprint,
         science_program=science_program,
-        standard_mask_params=safety_mask_params,
+        standard_mask_params=standard_mask_params,
         for_simulation=for_simulation,
     )
 

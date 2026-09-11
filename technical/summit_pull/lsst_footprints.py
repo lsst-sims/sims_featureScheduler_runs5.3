@@ -29,7 +29,8 @@ from rubin_scheduler.scheduler.utils import (
     make_rolling_footprints,
 )
 from rubin_scheduler.site_models import Almanac
-from rubin_scheduler.utils import DEFAULT_NSIDE, SURVEY_START_MJD
+from rubin_scheduler.utils import DEFAULT_NSIDE
+from fbs_config_lsst_survey import SURVEY_START_MJD
 
 
 def get_footprints(

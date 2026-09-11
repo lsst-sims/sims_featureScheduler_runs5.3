@@ -549,9 +549,7 @@ def gen_template_surveys(
         detailer_list.append(detailers.LabelRegionsAndDDFs())
         # Add extinction_limit detailer for cloud masking in queue_manager.
         detailer_list.append(
-            detailers.ExtinctionLimitDetailer(
-                extinction_limit=cloud_limit
-            )
+            detailers.ExtinctionLimitDetailer(extinction_limit=cloud_limit)
         )
 
         # For the bandpasses in use in this template survey,
@@ -809,9 +807,7 @@ def blob_for_long(
         if apply_cloud_mask:
             # Add extinction_limit detailer for cloud masking in queue_manager.
             detailer_list.append(
-                detailers.ExtinctionLimitDetailer(
-                    extinction_limit=cloud_limit
-                )
+                detailers.ExtinctionLimitDetailer(extinction_limit=cloud_limit)
             )
 
         # List to hold tuples of (basis_function_object, weight)
@@ -1113,9 +1109,7 @@ def gen_greedy_surveys(
     if apply_cloud_mask:
         # Add extinction_limit detailer for cloud masking in queue_manager.
         detailer_list.append(
-            detailers.ExtinctionLimitDetailer(
-                extinction_limit=cloud_limit
-            )
+            detailers.ExtinctionLimitDetailer(extinction_limit=cloud_limit)
         )
 
     if "u" in bands:
@@ -1153,7 +1147,7 @@ def gen_greedy_surveys(
         if bandname in dark_only:
             bfs.append((bf.NotTwilightBasisFunction(), 0.0))
             bfs.append((bf.MoonAltLimitBasisFunction(alt_limit=-5), 0.0))
-        
+
         masks = standard_masks(**standard_mask_params)
         for m in masks:
             bfs.append((m, 0))
@@ -1314,9 +1308,7 @@ def generate_blobs(
         if apply_cloud_mask:
             # Add extinction_limit detailer for cloud masking in queue_manager.
             detailer_list.append(
-                detailers.ExtinctionLimitDetailer(
-                    extinction_limit=cloud_limit
-                )
+                detailers.ExtinctionLimitDetailer(extinction_limit=cloud_limit)
             )
 
         # List to hold tuples of (basis_function_object, weight)
@@ -1575,9 +1567,7 @@ def generate_twilight_near_sun(
         if apply_cloud_mask:
             # Add extinction_limit detailer for cloud masking in queue_manager.
             detailer_list.append(
-                detailers.ExtinctionLimitDetailer(
-                    extinction_limit=cloud_limit
-                )
+                detailers.ExtinctionLimitDetailer(extinction_limit=cloud_limit)
             )
 
         bfs = []
