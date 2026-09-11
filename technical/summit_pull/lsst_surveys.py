@@ -76,20 +76,6 @@ BLOB_SURVEY_PARAMS_DEFAULTS = {
     "check_scheduled": True,
 }
 
-STANDARD_MASK_DEFAULTS = {
-    "nside": DEFAULT_NSIDE,
-    "wind_speed_maximum": 40,
-    "min_alt": 20,
-    "max_alt": 86.5,
-    "shadow_minutes": 2,
-    "apply_cloud_mask": True,
-    "cloud_limit": 8,
-    "apply_time_limited_shadow": False,
-    "time_to_sunrise": 3.0,
-    "min_az_sunrise": 150,
-    "max_az_sunrise": 250,
-}
-
 
 def standard_masks(
     nside: int = DEFAULT_NSIDE,
@@ -421,6 +407,7 @@ def gen_template_surveys(
     night_max: int = 365,
     m5_weight: float = 6.0,
     apply_cloud_extinction: bool = True,
+    cloud_limit: float = 1.5,
     footprint_weight: float = 1.5,
     slewtime_weight: float = 3.0,
     stayband_weight: float = 3.0,
@@ -527,7 +514,7 @@ def gen_template_surveys(
         blob_survey_params = BLOB_SURVEY_PARAMS_DEFAULTS
 
     if standard_mask_params is None:
-        standard_mask_params = STANDARD_MASK_DEFAULTS
+        standard_mask_params = {}
         standard_mask_params["nside"] = nside
     else:
         standard_mask_params = copy.deepcopy(standard_mask_params)
@@ -563,7 +550,7 @@ def gen_template_surveys(
         # Add extinction_limit detailer for cloud masking in queue_manager.
         detailer_list.append(
             detailers.ExtinctionLimitDetailer(
-                extinction_limit=standard_mask_params["cloud_limit"]
+                extinction_limit=cloud_limit
             )
         )
 
@@ -706,6 +693,8 @@ def blob_for_long(
     HA_max: float = 24 - 3.5,
     m5_weight: float = 6.0,
     apply_cloud_extinction: bool = True,
+    apply_cloud_mask: bool = True,
+    cloud_limit: float = 1.5,
     footprint_weight: float = 1.5,
     slewtime_weight: float = 3.0,
     stayband_weight: float = 3.0,
@@ -776,7 +765,7 @@ def blob_for_long(
         useful for setting the number of pointings to schedule within
         pair_time.
     standard_mask_params : `dict` or None
-        A dictionary of additional kwargs to mass to the standard masks.
+        A dictionary of additional kwargs to pass to the standard masks.
     pair_pad : `float`
         How much extra time to pad above the necessary pair time
         for shadow basis function.
@@ -785,7 +774,7 @@ def blob_for_long(
     if blob_survey_params is None:
         blob_survey_params = BLOB_SURVEY_PARAMS_DEFAULTS
     if standard_mask_params is None:
-        standard_mask_params = STANDARD_MASK_DEFAULTS
+        standard_mask_params = {}
         standard_mask_params["nside"] = nside
     else:
         standard_mask_params = copy.deepcopy(standard_mask_params)
@@ -817,11 +806,11 @@ def blob_for_long(
             detailers.BandNexp(bandname="u", nexp=1, exptime=u_exptime)
         )
         detailer_list.append(detailers.LabelRegionsAndDDFs())
-        if standard_mask_params["apply_cloud_mask"]:
+        if apply_cloud_mask:
             # Add extinction_limit detailer for cloud masking in queue_manager.
             detailer_list.append(
                 detailers.ExtinctionLimitDetailer(
-                    extinction_limit=standard_mask_params["cloud_limit"]
+                    extinction_limit=cloud_limit
                 )
             )
 
@@ -1034,6 +1023,7 @@ def gen_long_gaps_survey(
 def gen_greedy_surveys(
     nside: int = DEFAULT_NSIDE,
     bands: list[str] = ["u", "g", "r", "i", "z", "y"],
+    dark_only: list[str] = ["u", "g"],
     ignore_obs: list[str] = ["DD", "twilight_near_sun", "ToO"],
     camera_rot_limits: tuple[float, float] = CAMERA_ROT_LIMITS,
     exptime: float = EXPTIME,
@@ -1041,6 +1031,8 @@ def gen_greedy_surveys(
     shadow_minutes: float = 15.0,
     m5_weight: float = 3.0,
     apply_cloud_extinction: bool = True,
+    apply_cloud_mask: bool = True,
+    cloud_limit: float = 8,
     footprint_weight: float = 0.75,
     slewtime_weight: float = 3.0,
     stayband_weight: float = 100.0,
@@ -1118,11 +1110,11 @@ def gen_greedy_surveys(
     ]
     detailer_list.append(detailers.LabelRegionsAndDDFs())
     # This is probably False (to allow greedy survey to always run).
-    if standard_mask_params["apply_cloud_mask"]:
+    if apply_cloud_mask:
         # Add extinction_limit detailer for cloud masking in queue_manager.
         detailer_list.append(
             detailers.ExtinctionLimitDetailer(
-                extinction_limit=standard_mask_params["cloud_limit"]
+                extinction_limit=cloud_limit
             )
         )
 
@@ -1144,7 +1136,7 @@ def gen_greedy_surveys(
                 slewtime_weight=slewtime_weight,
                 stayband_weight=stayband_weight,
                 footprints=footprints,
-                strict=False,
+                strict=True,
             )
         )
 
@@ -1157,6 +1149,11 @@ def gen_greedy_surveys(
                 repeat_weight,
             )
         )
+
+        if bandname in dark_only:
+            bfs.append((bf.NotTwilightBasisFunction(), 0.0))
+            bfs.append((bf.MoonAltLimitBasisFunction(alt_limit=-5), 0.0))
+        
         masks = standard_masks(**standard_mask_params)
         for m in masks:
             bfs.append((m, 0))
@@ -1196,6 +1193,8 @@ def generate_blobs(
     max_pair_time: float = 40.0,
     m5_weight: float = 6.0,
     apply_cloud_extinction: bool = True,
+    apply_cloud_mask: bool = True,
+    cloud_limit: float = 1.5,
     footprint_weight: float = 1.5,
     slewtime_weight: float = 3.0,
     stayband_weight: float = 3.0,
@@ -1312,11 +1311,11 @@ def generate_blobs(
             )
         detailer_list.append(detailers.FlushForSchedDetailer())
         detailer_list.append(detailers.LabelRegionsAndDDFs())
-        if standard_mask_params["apply_cloud_mask"]:
+        if apply_cloud_mask:
             # Add extinction_limit detailer for cloud masking in queue_manager.
             detailer_list.append(
                 detailers.ExtinctionLimitDetailer(
-                    extinction_limit=standard_mask_params["cloud_limit"]
+                    extinction_limit=cloud_limit
                 )
             )
 
@@ -1462,6 +1461,8 @@ def generate_twilight_near_sun(
     stayband_weight: float = 3.0,
     band_dist_weight: float = 0.3,
     min_area: float | None = None,
+    apply_cloud_mask: bool = True,
+    cloud_limit: float = 1.5,
     bands: str = "riz",
     n_repeat: int = 4,
     sun_alt_limit: float = -14.8,
@@ -1571,11 +1572,11 @@ def generate_twilight_near_sun(
         )
         detailer_list.append(detailers.RandomBandDetailer(bands=bands))
         detailer_list.append(detailers.LabelRegionsAndDDFs())
-        if standard_mask_params["apply_cloud_mask"]:
+        if apply_cloud_mask:
             # Add extinction_limit detailer for cloud masking in queue_manager.
             detailer_list.append(
                 detailers.ExtinctionLimitDetailer(
-                    extinction_limit=standard_mask_params["cloud_limit"]
+                    extinction_limit=cloud_limit
                 )
             )
 

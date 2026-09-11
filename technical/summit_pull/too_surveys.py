@@ -34,7 +34,6 @@ from rubin_scheduler.utils import DEFAULT_NSIDE
 from lsst_surveys import (
     EXPTIME,
     SCIENCE_PROGRAM,
-    STANDARD_MASK_DEFAULTS,
     standard_masks,
 )
 
@@ -45,6 +44,7 @@ def gen_too_surveys(
     too_footprint: npt.NDArray | None = None,
     science_program: str = SCIENCE_PROGRAM,
     standard_mask_params: dict | None = None,
+    for_simulation: bool = False,
 ) -> list[ToOScriptedSurvey]:
     """Generate a list of ToO surveys to follow up
     events passed in Conditions.
@@ -61,6 +61,8 @@ def gen_too_surveys(
         Metadata to identify the science program for the visit.
     standard_mask_params : `dict` or None
         A dictionary of additional kwargs to mass to the standard safety masks.
+    for simulation : `bool`
+        Are we running a sim, then set Solar System to update mjd.
 
     Returns
     -------
@@ -69,7 +71,7 @@ def gen_too_surveys(
         of visits in response to ToO events in the Conditions objects.
     """
     if standard_mask_params is None:
-        standard_mask_params = STANDARD_MASK_DEFAULTS
+        standard_mask_params = {}
         standard_mask_params["nside"] = nside
     else:
         standard_mask_params = deepcopy(standard_mask_params)
@@ -368,6 +370,11 @@ def gen_too_surveys(
     nvis = [1] * 3
     exptimes = [EXPTIME] * 3
 
+    if for_simulation:
+        update_mjd0 = True
+    else:
+        update_mjd0 = False
+
     too_surveys.append(
         ToOScriptedSurvey(
             masks,
@@ -385,6 +392,7 @@ def gen_too_surveys(
             observation_reason="too_sso_general",
             science_program=science_program,
             flushtime=3.0,
+            update_mjd0=update_mjd0,
         )
     )
 
@@ -410,6 +418,7 @@ def gen_too_surveys(
             observation_reason="too_sso_twi",
             science_program=science_program,
             flushtime=3.0,
+            update_mjd0=update_mjd0,
         )
     )
 
