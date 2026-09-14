@@ -220,6 +220,7 @@ def standard_bf(
     season_end_hour: float = 2.0,
     strict: bool = True,
     seeing_fwhm_max: float | None = None,
+    lead_time_days: float = 0,
 ) -> list[tuple[bf.BaseBasisFunction, float]]:
     """Generate the standard basis functions that are shared by blob surveys
 
@@ -266,6 +267,9 @@ def standard_bf(
     seeing_fwhm_max : `float`
         Seeing limit to pass to the FootprintBasisFunction - visits
         with delivered image quality > seeing_fwhm_max will not be counted.
+    lead_time_days : `float`
+        Passed to M5DiffBasisFunction to control how far in the future to 
+        extrapolate cloud exticntion maps. Default 0 (days)
 
     Returns
     -------
@@ -281,7 +285,8 @@ def standard_bf(
         bfs.append(
             (
                 bf.M5DiffBasisFunction(
-                    bandname=bandname, nside=nside, fiducial_FWHMEff=fiducial_fwhm
+                    bandname=bandname, nside=nside, fiducial_FWHMEff=fiducial_fwhm,
+                    lead_time_days=lead_time_days,
                 ),
                 m5_weight / 2.0,
             )
@@ -289,7 +294,8 @@ def standard_bf(
         bfs.append(
             (
                 bf.M5DiffBasisFunction(
-                    bandname=bandname2, nside=nside, fiducial_FWHMEff=fiducial_fwhm
+                    bandname=bandname2, nside=nside, fiducial_FWHMEff=fiducial_fwhm,
+                    lead_time_days=lead_time_days,
                 ),
                 m5_weight / 2.0,
             )
@@ -299,7 +305,8 @@ def standard_bf(
         bfs.append(
             (
                 bf.M5DiffBasisFunction(
-                    bandname=bandname, nside=nside, fiducial_FWHMEff=fiducial_fwhm
+                    bandname=bandname, nside=nside, fiducial_FWHMEff=fiducial_fwhm,
+                    lead_time_days=lead_time_days,
                 ),
                 m5_weight,
             )
@@ -1092,6 +1099,11 @@ def gen_greedy_surveys(
         )
 
     for bandname in bands:
+        if bandname == "u":
+            lead_time_days = u_exptime/2./3600/24.
+        else:
+            lead_time_days = exptime/2./3600/24.
+
         bfs = []
         bfs.extend(
             standard_bf(
@@ -1104,6 +1116,7 @@ def gen_greedy_surveys(
                 stayband_weight=stayband_weight,
                 footprints=footprints,
                 strict=True,
+                lead_time_days=lead_time_days,
             )
         )
 
