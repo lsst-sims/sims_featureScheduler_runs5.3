@@ -505,6 +505,8 @@ def gen_template_surveys(
     pair_pad : `float`
         How much extra time (in minutes) to pad above the necessary pair time
         for shadow basis function.
+    median_cloud_limit : `float`
+        The median cloud extinction limit where templates shouldn't be attempted.
     """
 
     if n_obs_template is None:
@@ -652,6 +654,11 @@ def gen_template_surveys(
         survey_name = "templates %s%s" % (bandname, bandname2)
         observation_reason = f"template_blob_{bandname}{bandname2}_{pair_time:.1f}"
 
+        # Make sure dither gets rotated every call
+        # unlike default per night
+        bsp = copy.deepcopy(blob_survey_params)
+        bsp["dither"] = "call"
+
         surveys.append(
             BlobPairsSurvey(
                 basis_functions,
@@ -660,7 +667,6 @@ def gen_template_surveys(
                 bandname2=bandname2,
                 exptime=exptime,
                 ideal_pair_time=pair_time,
-                dither="call",
                 survey_name=survey_name,
                 science_program=science_program,
                 observation_reason=observation_reason,
@@ -671,7 +677,7 @@ def gen_template_surveys(
                 additional_masks=additional_masks,
                 additional_area_limits=additional_area_limits,
                 note_block_size=True,
-                **blob_survey_params,
+                **bsp,
             )
         )
     return surveys

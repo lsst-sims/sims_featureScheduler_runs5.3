@@ -136,9 +136,7 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
         "dither": "night",
         "twilight_scale": True,
     }
-    # Seeing (FWHM in ") max for template
-    fwhm_template_max = 1.2
-
+    
     # Parameters for rolling cadence footprint definition
     nslice = 2  # N slices for rolling
     rolling_scale = 0.9  # Strength of rolling
@@ -371,16 +369,13 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
         nside=nside,
         band1s=["u", "g", "g", "r", "r", "i", "r", "z", "y"],
         band2s=["u", "g", "r", "r", "i", "z", "z", "y", "y"],
-        seeing_fwhm_max=fwhm_template_max,
         camera_rot_limits=camera_rot_limits,
         exptime=exptime,
-        nexp=nexp,
         u_exptime=u_exptime,
-        u_nexp=u_nexp,
         n_obs_template={"u": 6, "g": 6, "r": 6, "i": 6, "z": 6, "y": 6},
         science_program=science_program,
         blob_survey_params=blob_survey_params,
-        safety_mask_params=standard_mask_params,
+        standard_mask_params=standard_mask_params,
     )
 
     # Define ToO surveys
