@@ -2,8 +2,8 @@ Try to set up a model observatory that pulls DREAM cloud data
 
 
 have:
-* cloud_dodge:  DREAM clouds with the queue manager set to default
-* cloud_no_dodge: DREAM clouds with queue manager set to do nothing. Note the Surveys are probably using the transparency maps, so there is a slight level of dodging happening. 
+* cloud_dodge:  DREAM clouds with the queue manager set to default cloud dodging. M5Diff basis function includes cloud extinction.
+* cloud_no_dodge: DREAM clouds with queue manager set to do nothing. Note standard basis functions set to not use cloud map in M5Diff basis function.
 * no_clouds:  No DREAM clouds at all.
 
 Setting greedy survey to use cloud future predicted values.

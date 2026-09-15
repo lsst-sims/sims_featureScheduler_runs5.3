@@ -15,7 +15,7 @@ from rubin_scheduler.scheduler.targetofo import gen_all_events
 from rubin_scheduler.scheduler.utils import ObservationArray
 from rubin_scheduler.utils import DEFAULT_NSIDE, mjd2dayobs
 
-from fbs_config import SURVEY_START_MJD, get_scheduler
+from fbs_config_cloud import SURVEY_START_MJD, get_scheduler
 
 EXPECTED_WAIT_SETTLE = 3.0
 CURRENT_TMA_DEFAULT = {

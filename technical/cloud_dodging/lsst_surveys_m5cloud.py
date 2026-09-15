@@ -286,7 +286,7 @@ def standard_bf(
             (
                 bf.M5DiffBasisFunction(
                     bandname=bandname, nside=nside, fiducial_FWHMEff=fiducial_fwhm,
-                    lead_time_days=lead_time_days,apply_cloud_extinction=False,
+                    lead_time_days=lead_time_days, apply_cloud_extinction=True,
                 ),
                 m5_weight / 2.0,
             )
@@ -295,7 +295,7 @@ def standard_bf(
             (
                 bf.M5DiffBasisFunction(
                     bandname=bandname2, nside=nside, fiducial_FWHMEff=fiducial_fwhm,
-                    lead_time_days=lead_time_days,apply_cloud_extinction=False,
+                    lead_time_days=lead_time_days, apply_cloud_extinction=True,
                 ),
                 m5_weight / 2.0,
             )
@@ -306,7 +306,7 @@ def standard_bf(
             (
                 bf.M5DiffBasisFunction(
                     bandname=bandname, nside=nside, fiducial_FWHMEff=fiducial_fwhm,
-                    lead_time_days=lead_time_days,apply_cloud_extinction=False,
+                    lead_time_days=lead_time_days, apply_cloud_extinction=True,
                 ),
                 m5_weight,
             )
