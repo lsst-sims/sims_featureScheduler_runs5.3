@@ -1,0 +1,1 @@
+/Users/yoachim/git_repos/ts_config_scheduler/Scheduler/feature_scheduler/maintel/fbs_config_lsst_survey.py
