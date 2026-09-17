@@ -6,26 +6,9 @@ from rubin_scheduler.utils import DEFAULT_NSIDE
 
 class FootprintCount(Footprint):
     """Rather than normalized footprint, return the raw
-    step function value at each HEALpix """
-
-    def __init__(
-        self,
-        mjd_start,
-        sun_ra_start=0,
-        nside=DEFAULT_NSIDE,
-        bands=["u", "g", "r", "i", "z", "y"],
-        filters=None,
-        period=365.25,
-        step_func=None,
-    ):
-        super().__init__(
-            mjd_start,
-            sun_ra_start=sun_ra_start,
-            nside=nside,
-            bands=bands,
-            period=period,
-            step_func=step_func,
-        )
+    step function value at each HEALpix. Units will now
+    be counts/year rather than defining relative counts 
+    desired between bands. """
 
     def _update_mjd(self, mjd, norm=False):
         if mjd != self.mjd_current:
@@ -43,6 +26,9 @@ class FootprintCountBasisFunction(FootprintBasisFunction):
 
     Parameters
     ----------
+    footprint : `FootprintCount`
+        The footprint is now expected to be a FootprintCount
+        object.
     mulit_factor : `float`
         Factor to mulitiply footprint by. For a footprint
         with values on 1, mult_factor will set the number of visits 
