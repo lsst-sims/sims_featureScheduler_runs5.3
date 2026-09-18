@@ -31,7 +31,7 @@ from rubin_scheduler.scheduler.detailers import BandPickToODetailer
 from rubin_scheduler.scheduler.surveys import ToOScriptedSurvey
 from rubin_scheduler.utils import DEFAULT_NSIDE
 
-from .lsst_surveys import (
+from lsst_surveys import (
     EXPTIME,
     SCIENCE_PROGRAM,
     standard_masks,

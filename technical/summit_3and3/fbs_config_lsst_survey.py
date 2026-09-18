@@ -24,10 +24,10 @@ __all__ = ("get_scheduler",)
 
 import copy
 
-import lsst.ts.fbs.utils.maintel.lsst_footprints as lsst_footprints
-import lsst.ts.fbs.utils.maintel.lsst_surveys as lsst_surveys
-import lsst.ts.fbs.utils.maintel.roman_surveys as roman_surveys
-import lsst.ts.fbs.utils.maintel.too_surveys as too_surveys
+import lsst_footprints as lsst_footprints
+import lsst_surveys as lsst_surveys
+import roman_surveys as roman_surveys
+import too_surveys as too_surveys
 import numpy as np
 import rubin_scheduler.scheduler.basis_functions as bf
 import rubin_scheduler.scheduler.detailers as detailers
@@ -323,6 +323,7 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
         u_exptime=u_template_exptime,
         n_obs_template={"u": 6, "g": 6, "r": 6, "i": 6, "z": 6, "y": 6},
         night_max=365 * 2,
+        night_min=365,
         science_program=science_program,
         blob_survey_params=blob_survey_params,
         standard_mask_params=template_mask_params,

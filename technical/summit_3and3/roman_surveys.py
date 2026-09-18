@@ -28,7 +28,7 @@ import rubin_scheduler.scheduler.detailers as detailers
 from rubin_scheduler.scheduler.surveys import FieldSurvey
 from rubin_scheduler.utils import DEFAULT_NSIDE, special_locations
 
-from .lsst_surveys import EXPTIME, SCIENCE_PROGRAM, standard_masks
+from lsst_surveys import EXPTIME, SCIENCE_PROGRAM, standard_masks
 
 
 def def_roman_info() -> dict:
