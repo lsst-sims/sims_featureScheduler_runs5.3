@@ -370,11 +370,6 @@ def gen_too_surveys(
     nvis = [1] * 3
     exptimes = [EXPTIME] * 3
 
-    if for_simulation:
-        update_mjd0 = True
-    else:
-        update_mjd0 = False
-
     too_surveys.append(
         ToOScriptedSurvey(
             masks,
@@ -392,7 +387,7 @@ def gen_too_surveys(
             observation_reason="too_sso_general",
             science_program=science_program,
             flushtime=3.0,
-            update_mjd0=update_mjd0,
+            update_mjd0=for_simulation,
         )
     )
 
@@ -418,7 +413,6 @@ def gen_too_surveys(
             observation_reason="too_sso_twi",
             science_program=science_program,
             flushtime=3.0,
-            update_mjd0=update_mjd0,
         )
     )
 

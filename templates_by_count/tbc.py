@@ -8,14 +8,13 @@ import numpy.typing as npt
 import rubin_scheduler
 from lsst_survey_sim.lsst_support import survey_times
 from rubin_scheduler.scheduler import sim_runner
-# from rubin_scheduler.scheduler.model_observatory import ModelObservatory
-from cloud_mo import CloudyModelObservatory as ModelObservatory
+from rubin_scheduler.scheduler.model_observatory import ModelObservatory
 from rubin_scheduler.scheduler.schedulers import CoreScheduler, SimpleBandSched
 from rubin_scheduler.scheduler.targetofo import gen_all_events
 from rubin_scheduler.scheduler.utils import ObservationArray
 from rubin_scheduler.utils import DEFAULT_NSIDE, mjd2dayobs
 
-from fbs_config_cloud import SURVEY_START_MJD, get_scheduler
+from fbs_config import SURVEY_START_MJD, get_scheduler
 
 EXPECTED_WAIT_SETTLE = 3.0
 CURRENT_TMA_DEFAULT = {
@@ -89,8 +88,8 @@ def make_observatory(
         nside=nside,
         mjd_start=survey_start_mjd,
         sim_to_o=sim_to_o,
-        cloud_data="ideal",
-        downtimes="ideal",
+        downtimes=survey_info["downtimes"],
+        cloud_offset_year=cloud_offset_year,
     )
 
     tma_kwargs = CURRENT_TMA_DEFAULT

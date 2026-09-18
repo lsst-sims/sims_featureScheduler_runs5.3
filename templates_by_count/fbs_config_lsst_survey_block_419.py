@@ -211,7 +211,6 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
             raise RuntimeError(
                 f"Provided hash {expected_hex_digest} does not match loaded file hash {hex_digest}. "
                 "Reach out for support so they can help you generate the correct file."
-                "Code in: ts_config_scheduler.Scheduler.ddf_gen"
             )
         loaded.close()
     else:

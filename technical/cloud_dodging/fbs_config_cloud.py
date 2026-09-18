@@ -22,7 +22,7 @@ from rubin_scheduler.site_models import Almanac
 # import lsst.ts.fbs.utils.maintel.lsst_surveys as lsst_surveys
 # import lsst.ts.fbs.utils.maintel.roman_surveys as roman_surveys
 # import lsst.ts.fbs.utils.maintel.too_surveys as too_surveys
-import lsst_surveys as lsst_surveys
+import lsst_surveys_m5cloud as lsst_surveys
 import roman_surveys as roman_surveys
 import too_surveys as too_surveys
 from survey_start import SURVEY_START_MJD
@@ -211,7 +211,6 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
             raise RuntimeError(
                 f"Provided hash {expected_hex_digest} does not match loaded file hash {hex_digest}. "
                 "Reach out for support so they can help you generate the correct file."
-                "Code in: ts_config_scheduler.Scheduler.ddf_gen"
             )
         loaded.close()
     else:

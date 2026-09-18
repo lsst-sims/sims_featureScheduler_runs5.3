@@ -72,7 +72,7 @@ def make_observatory(
     readtime: float = 3.07,
     band_changetime: float = 120.0,
     new_downtime_ndays=3700,
-    cloud_offset_year: float = 7.,
+    cloud_offset_year: float = 7.0,
 ):
 
     survey_info = survey_times(
@@ -189,7 +189,7 @@ if __name__ == "__main__":
         scale=too_scale,
         nside=nside,
         mjd_start=SURVEY_START_MJD,
-        mjd_end=SURVEY_START_MJD + np.max([365.25*10, args.survey_length]),
+        mjd_end=SURVEY_START_MJD + np.max([365.25 * 10, args.survey_length]),
     )
 
     observatory = make_observatory(

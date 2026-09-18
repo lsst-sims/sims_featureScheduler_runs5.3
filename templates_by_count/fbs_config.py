@@ -18,6 +18,7 @@ from rubin_scheduler.scheduler.utils import (
     make_rolling_footprints,
 )
 from rubin_scheduler.site_models import Almanac
+from by_count_utils import FootprintCount
 
 # import lsst.ts.fbs.utils.maintel.lsst_surveys as lsst_surveys
 # import lsst.ts.fbs.utils.maintel.roman_surveys as roman_surveys
@@ -211,7 +212,6 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
             raise RuntimeError(
                 f"Provided hash {expected_hex_digest} does not match loaded file hash {hex_digest}. "
                 "Reach out for support so they can help you generate the correct file."
-                "Code in: ts_config_scheduler.Scheduler.ddf_gen"
             )
         loaded.close()
     else:
@@ -366,7 +366,7 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
     # Create template footprint.
     # Similar to rolling footprint but tracks visits separately
     # (only good seeing visits) and no rolling.
-    template_fp = Footprint(survey_start_mjd, sun_ra_start, nside=nside)
+    template_fp = FootprintCount(survey_start_mjd, sun_ra_start, nside=nside)
     for key in footprints_hp_array.dtype.names:
         tmp_fp = np.where(footprints_hp_array[key] > 0, 1, np.nan)
         template_fp.set_footprint(key, tmp_fp)
@@ -386,6 +386,9 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
         science_program=science_program,
         blob_survey_params=blob_survey_params,
         safety_mask_params=safety_mask_params,
+        mult_factor=3,
+        mask_reward_below=-2,
+        mask_above_count=7,
     )
 
     # Define ToO surveys

@@ -3,17 +3,17 @@
 #SBATCH --account=rubin:developers      # Account name
 #SBATCH --partition=milano
 #
-#SBATCH --job-name=cloudd53
+#SBATCH --job-name=baseline53
 #SBATCH --output=output-%j.txt
 #SBATCH --error=output-%j.txt
 #
 #SBATCH --nodes=1                       # Number of nodes
-#SBATCH --ntasks=3
+#SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=40g
 #
 #SBATCH --time=3-14:10:00
-#SBATCH --chdir=/sdf/data/rubin/shared/fbs_sims/sims_featureScheduler_runs5.3/technical/cloud_dodging
+#SBATCH --chdir=/sdf/data/rubin/shared/fbs_sims/sims_featureScheduler_runs5.3/technical/summit_pull
 #SBATCH --mail-user=yoachim@uw.edu
 #
 ##turn on e-mail notification
@@ -25,10 +25,7 @@ source ~/anaconda3/etc/profile.d/conda.sh
 conda activate rubin14
 export OPENBLAS_NUM_THREADS=1
 
-#python p14_baseline.py --survey_length 4018
-# python baseline.py
-
-cat cd.sh | parallel -j 6
+python summit_pull.py
 
 # rm maf.sh
 #  

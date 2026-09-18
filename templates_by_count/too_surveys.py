@@ -31,19 +31,17 @@ from rubin_scheduler.scheduler.detailers import BandPickToODetailer
 from rubin_scheduler.scheduler.surveys import ToOScriptedSurvey
 from rubin_scheduler.utils import DEFAULT_NSIDE
 
-from lsst_surveys import (
-    EXPTIME,
-    SCIENCE_PROGRAM,
-    standard_masks,
-)
+from lsst_surveys import EXPTIME, NEXP, SCIENCE_PROGRAM, safety_masks
 
 
 def gen_too_surveys(
     nside: int = DEFAULT_NSIDE,
     detailer_list: list[detailers.BaseDetailer] | None = None,
     too_footprint: npt.NDArray | None = None,
+    long_exp_nsnaps: int = 2,
+    n_snaps: int = NEXP,
     science_program: str = SCIENCE_PROGRAM,
-    standard_mask_params: dict | None = None,
+    safety_mask_params: dict | None = None,
     for_simulation: bool = False,
 ) -> list[ToOScriptedSurvey]:
     """Generate a list of ToO surveys to follow up
@@ -57,9 +55,13 @@ def gen_too_surveys(
         List of survey detailers.
     too_footprint : `np.ndarray` or None
         Footprint to contain ToOs within (such as the lsst footprint).
+    long_exp_nsnaps : `int`
+        The number of snaps for longer exposures. (60s??)
+    n_snaps : `int`
+        The number of snaps per visit for other exposures. (??)
     science_program : `str`
         Metadata to identify the science program for the visit.
-    standard_mask_params : `dict` or None
+    safety_mask_params : `dict` or None
         A dictionary of additional kwargs to mass to the standard safety masks.
     for simulation : `bool`
         Are we running a sim, then set Solar System to update mjd.
@@ -70,13 +72,13 @@ def gen_too_surveys(
         A list of ToO surveys configured to trigger a pre-specified sequence
         of visits in response to ToO events in the Conditions objects.
     """
-    if standard_mask_params is None:
-        standard_mask_params = {}
-        standard_mask_params["nside"] = nside
+    if safety_mask_params is None:
+        safety_mask_params = {}
+        safety_mask_params["nside"] = nside
     else:
-        standard_mask_params = deepcopy(standard_mask_params)
+        safety_mask_params = deepcopy(safety_mask_params)
     # No value of shadow_minutes with ToO surveys?
-    masks = standard_masks(**standard_mask_params)
+    masks = safety_masks(**safety_mask_params)
 
     too_surveys = []
 
@@ -108,6 +110,7 @@ def gen_too_surveys(
             too_types_to_follow=["GW_case_A"],
             survey_name="ToO, GW_case_A",
             flushtime=48.0,
+            n_snaps=n_snaps,
             # Update target_name to match the alert event ID
             target_name_base="GW_case_A",
             observation_reason="too_gw_case_a",
@@ -140,6 +143,7 @@ def gen_too_surveys(
             observation_reason="too_gw_case_b_c",
             science_program=science_program,
             flushtime=48,
+            n_snaps=n_snaps,
         )
     )
 
@@ -168,6 +172,7 @@ def gen_too_surveys(
             observation_reason="too_gw_case_d_e",
             science_program=science_program,
             flushtime=48,
+            n_snaps=n_snaps,
             event_gen_detailers=None,
         )
     )
@@ -206,6 +211,7 @@ def gen_too_surveys(
             observation_reason="too_gw_case_large",
             science_program=science_program,
             flushtime=48,
+            n_snaps=n_snaps,
             event_gen_detailers=None,
         )
     )
@@ -261,6 +267,7 @@ def gen_too_surveys(
             observation_reason="too_bbh",
             science_program=science_program,
             flushtime=48,
+            n_snaps=n_snaps,
             event_gen_detailers=event_detailers,
         )
     )
@@ -291,6 +298,7 @@ def gen_too_surveys(
             observation_reason="too_lensed_bns_a",
             science_program=science_program,
             flushtime=48.0,
+            n_snaps=n_snaps,
         )
     )
 
@@ -317,6 +325,7 @@ def gen_too_surveys(
             observation_reason="too_lensed_bns_b",
             science_program=science_program,
             flushtime=48.0,
+            n_snaps=n_snaps,
         )
     )
 
@@ -355,6 +364,7 @@ def gen_too_surveys(
             observation_reason="too_neutrino",
             science_program=science_program,
             flushtime=20 * 24,
+            n_snaps=n_snaps,
         )
     )
 
@@ -392,6 +402,7 @@ def gen_too_surveys(
             observation_reason="too_sso_general",
             science_program=science_program,
             flushtime=3.0,
+            n_snaps=n_snaps,
             update_mjd0=update_mjd0,
         )
     )
@@ -418,7 +429,8 @@ def gen_too_surveys(
             observation_reason="too_sso_twi",
             science_program=science_program,
             flushtime=3.0,
-            update_mjd0=update_mjd0,
+            n_snaps=n_snaps,
+            update_mjd0=update_mjd0
         )
     )
 
@@ -451,6 +463,7 @@ def gen_too_surveys(
             observation_reason="too_sn_galactic",
             science_program=science_program,
             flushtime=48.0,
+            n_snaps=n_snaps,
         )
     )
 

@@ -46,22 +46,23 @@ from rubin_scheduler.scheduler.surveys import (
 from rubin_scheduler.scheduler.utils import ConstantFootprint, Footprints, ecliptic_area
 from rubin_scheduler.utils import (
     DEFAULT_NSIDE,
-    SURVEY_START_MJD,
     declination_dependent_fwhm,
 )
 
 # Set up values to use as kwarg defaults.
 EXPTIME = 30.0
 U_EXPTIME = 38.0
+# For deciding if visit can be used for templates
 SEEING_FWHM_MAX_ZENITH_DEFAULT = {
-    "u": 1.0,
-    "g": 1.0,
-    "r": 1.0,
-    "i": 1.0,
-    "z": 1.0,
-    "y": 1.0,
+    "u": 1.2,
+    "g": 1.2,
+    "r": 1.2,
+    "i": 1.2,
+    "z": 1.2,
+    "y": 1.2,
 }
 CAMERA_ROT_LIMITS = (-80.0, 80.0)
+# Science program should be overriden by config.
 SCIENCE_PROGRAM = "BLOCK-430"
 
 BLOB_SURVEY_PARAMS_DEFAULTS = {
@@ -80,7 +81,7 @@ BLOB_SURVEY_PARAMS_DEFAULTS = {
 def standard_masks(
     nside: int = DEFAULT_NSIDE,
     moon_distance: float = 30.0,
-    wind_speed_maximum: float = 20.0,
+    wind_speed_maximum: float = 40.0,
     min_alt: float = 20.0,
     max_alt: float = 86.5,
     min_az: float = 0.0,
@@ -234,7 +235,7 @@ def standard_bf(
     bandname2: str | None = "i",
     m5_weight: float = 6.0,
     fiducial_fwhm: float = 1.3,
-    apply_cloud_extinction: bool = True,
+    apply_clouds_m5: bool = True,
     footprint_weight: float = 1.5,
     slewtime_weight: float = 3.0,
     stayband_weight: float = 3.0,
@@ -257,7 +258,7 @@ def standard_bf(
         The weight for the 5-sigma depth difference basis function.
     fiducial_fwhm : `float`
         The fiducial FWHM for the M5Diff Basis function.
-    apply_cloud_extinction : `bool`
+    apply_clouds_m5 : `bool`
         Turn the cloud extinction flag on (True) or off (False) in the M5Diff
         basis function.
     footprint_weight : `float`
@@ -297,7 +298,7 @@ def standard_bf(
                     bandname=bandname,
                     nside=nside,
                     fiducial_FWHMEff=fiducial_fwhm,
-                    apply_cloud_extinction=apply_cloud_extinction,
+                    apply_cloud_extinction=apply_clouds_m5,
                 ),
                 m5_weight / 2.0,
             )
@@ -308,7 +309,7 @@ def standard_bf(
                     bandname=bandname2,
                     nside=nside,
                     fiducial_FWHMEff=fiducial_fwhm,
-                    apply_cloud_extinction=apply_cloud_extinction,
+                    apply_cloud_extinction=apply_clouds_m5,
                 ),
                 m5_weight / 2.0,
             )
@@ -321,7 +322,7 @@ def standard_bf(
                     bandname=bandname,
                     nside=nside,
                     fiducial_FWHMEff=fiducial_fwhm,
-                    apply_cloud_extinction=apply_cloud_extinction,
+                    apply_cloud_extinction=apply_clouds_m5,
                 ),
                 m5_weight,
             )
@@ -405,9 +406,9 @@ def gen_template_surveys(
     extra_HA_mins: tuple[float] = (1.25,),
     extra_HA_maxes: tuple[float] = (24.0 - 1.25,),
     night_max: int = 365,
+    night_min: int = 0,
     m5_weight: float = 6.0,
-    apply_cloud_extinction: bool = True,
-    cloud_limit: float = 1.5,
+    apply_clouds_m5: bool = True,
     footprint_weight: float = 1.5,
     slewtime_weight: float = 3.0,
     stayband_weight: float = 3.0,
@@ -415,6 +416,8 @@ def gen_template_surveys(
     blob_survey_params: dict | None = None,
     standard_mask_params: dict | None = None,
     pair_pad: float = 5.0,
+    extinction_limit: float = 2.0,
+    reset_per_season=False,
 ) -> list[BlobSurvey]:
     """Surveys that are intended to acquire template visits in a convenient yet
     aggressive manner. Visits are aquired in pairs, with shorter than standard
@@ -484,7 +487,7 @@ def gen_template_surveys(
         The maximum number of nights after survey start to acquire templates.
     m5_weight : `float`
         The weight for the 5-sigma depth difference basis function.
-    apply_cloud_extinction : `bool`
+    apply_clouds_m5 : `bool`
         Turn the cloud extinction flag on (True) or off (False) in the M5Diff
         basis function in the standard basis functions.
     footprint_weight : `float`
@@ -505,8 +508,9 @@ def gen_template_surveys(
     pair_pad : `float`
         How much extra time (in minutes) to pad above the necessary pair time
         for shadow basis function.
-    median_cloud_limit : `float`
-        The median cloud extinction limit where templates shouldn't be attempted.
+    extinction_limit : `float`
+        Add detailer so visits get extinction_limit added to them.
+        Default 2.
     """
 
     if n_obs_template is None:
@@ -550,9 +554,12 @@ def gen_template_surveys(
         )
         detailer_list.append(detailers.LabelRegionsAndDDFs())
         # Add extinction_limit detailer for cloud masking in queue_manager.
-        detailer_list.append(
-            detailers.ExtinctionLimitDetailer(extinction_limit=cloud_limit)
-        )
+        if extinction_limit is not None:
+            detailer_list.append(
+                detailers.ExtinctionLimitDetailer(
+                    extinction_limit=extinction_limit
+                )
+            )
 
         # For the bandpasses in use in this template survey,
         # find the seeing_fwhm_max using the minimum value for these bands.
@@ -575,7 +582,7 @@ def gen_template_surveys(
                 bandname2=bandname2,
                 footprints=footprints,
                 m5_weight=m5_weight,
-                apply_cloud_extinction=apply_cloud_extinction,
+                apply_clouds_m5=apply_clouds_m5,
                 footprint_weight=footprint_weight,
                 slewtime_weight=slewtime_weight,
                 stayband_weight=stayband_weight,
@@ -598,8 +605,9 @@ def gen_template_surveys(
             bfs.append((bf.NotTwilightBasisFunction(), 0.0))
             bfs.append((bf.MoonAltLimitBasisFunction(alt_limit=-5), 0.0))
 
-        # Limit to first year
-        bfs.append((bf.OnlyBeforeNightBasisFunction(night_max=night_max), 0.0))
+        # Turn on/off beore/after some time
+        bfs.append((bf.OnlyBeforeNightBasisFunction(night_max=night_max,
+                                                    night_min=night_min), 0.0))
 
         # Limit to only good seeing visits.
         bfs.append(
@@ -621,7 +629,7 @@ def gen_template_surveys(
                     n_max=n_obs_template[bandname],
                     bandname=bandname,
                     seeing_fwhm_max=dec_fwhm_max,
-                    reset_per_season=False,
+                    reset_per_season=reset_per_season,
                 ),
                 0.0,
             )
@@ -654,11 +662,6 @@ def gen_template_surveys(
         survey_name = "templates %s%s" % (bandname, bandname2)
         observation_reason = f"template_blob_{bandname}{bandname2}_{pair_time:.1f}"
 
-        # Make sure dither gets rotated every call
-        # unlike default per night
-        bsp = copy.deepcopy(blob_survey_params)
-        bsp["dither"] = "call"
-
         surveys.append(
             BlobPairsSurvey(
                 basis_functions,
@@ -667,6 +670,7 @@ def gen_template_surveys(
                 bandname2=bandname2,
                 exptime=exptime,
                 ideal_pair_time=pair_time,
+                dither="call",
                 survey_name=survey_name,
                 science_program=science_program,
                 observation_reason=observation_reason,
@@ -677,7 +681,7 @@ def gen_template_surveys(
                 additional_masks=additional_masks,
                 additional_area_limits=additional_area_limits,
                 note_block_size=True,
-                **bsp,
+                **blob_survey_params,
             )
         )
     return surveys
@@ -696,9 +700,7 @@ def blob_for_long(
     HA_min: float = 12,
     HA_max: float = 24 - 3.5,
     m5_weight: float = 6.0,
-    apply_cloud_extinction: bool = True,
-    apply_cloud_mask: bool = True,
-    cloud_limit: float = 1.5,
+    apply_clouds_m5: bool = True,
     footprint_weight: float = 1.5,
     slewtime_weight: float = 3.0,
     stayband_weight: float = 3.0,
@@ -714,6 +716,7 @@ def blob_for_long(
     blob_survey_params: dict | None = None,
     standard_mask_params: dict | None = None,
     pair_pad: float = 5.0,
+    extinction_limit: float = 2.0,
 ) -> list[BlobSurvey]:
     """
     Generate surveys that take observations in blobs.
@@ -744,7 +747,7 @@ def blob_for_long(
         The maximum HA to consider when considering template area.
     m5_weight : `float`
         The weight for the 5-sigma depth difference basis function.
-    apply_cloud_extinction : `bool`
+    apply_clouds_m5 : `bool`
         Flag to include cloud extinction into M5Diff basis function.
     footprint_weight : `float`
         The weight on the survey footprint basis function.
@@ -769,7 +772,7 @@ def blob_for_long(
         useful for setting the number of pointings to schedule within
         pair_time.
     standard_mask_params : `dict` or None
-        A dictionary of additional kwargs to pass to the standard masks.
+        A dictionary of additional kwargs to mass to the standard masks.
     pair_pad : `float`
         How much extra time to pad above the necessary pair time
         for shadow basis function.
@@ -810,10 +813,12 @@ def blob_for_long(
             detailers.BandNexp(bandname="u", nexp=1, exptime=u_exptime)
         )
         detailer_list.append(detailers.LabelRegionsAndDDFs())
-        if apply_cloud_mask:
+        if extinction_limit is not None:
             # Add extinction_limit detailer for cloud masking in queue_manager.
             detailer_list.append(
-                detailers.ExtinctionLimitDetailer(extinction_limit=cloud_limit)
+                detailers.ExtinctionLimitDetailer(
+                    extinction_limit=extinction_limit
+                )
             )
 
         # List to hold tuples of (basis_function_object, weight)
@@ -825,7 +830,7 @@ def blob_for_long(
                 bandname=bandname,
                 bandname2=bandname2,
                 m5_weight=m5_weight,
-                apply_cloud_extinction=apply_cloud_extinction,
+                apply_clouds_m5=apply_clouds_m5,
                 footprint_weight=footprint_weight,
                 slewtime_weight=slewtime_weight,
                 stayband_weight=stayband_weight,
@@ -901,7 +906,7 @@ def gen_long_gaps_survey(
     HA_max: float = 24 - 3.5,
     time_after_twi: float = 120,
     m5_weight: float = 6.0,
-    apply_cloud_extinction: bool = True,
+    apply_clouds_m5: bool = True,
     mask_cloud_limit: float = 1.5,
     footprint_weight: float = 1.5,
     slewtime_weight: float = 3.0,
@@ -939,7 +944,7 @@ def gen_long_gaps_survey(
         The time after evening twilight to attempt long gaps (minutes).
     m5_weight : `float`
         The weight for the 5-sigma depth difference basis function.
-    apply_cloud_extinction : `bool`
+    apply_clouds_m5 : `bool`
         Flag to include cloud extinction into M5Diff basis function.
     mask_cloud_limit : `float`
         The extinction_limit to use for masking the survey, when
@@ -1032,9 +1037,7 @@ def gen_greedy_surveys(
     u_exptime: float = U_EXPTIME,
     shadow_minutes: float = 15.0,
     m5_weight: float = 3.0,
-    apply_cloud_extinction: bool = True,
-    apply_cloud_mask: bool = True,
-    cloud_limit: float = 8,
+    apply_clouds_m5: bool = True,
     footprint_weight: float = 0.75,
     slewtime_weight: float = 3.0,
     stayband_weight: float = 100.0,
@@ -1042,6 +1045,7 @@ def gen_greedy_surveys(
     footprints: Footprints | None = None,
     science_program: str = SCIENCE_PROGRAM,
     standard_mask_params: dict | None = None,
+    extinction_limit: float = 10.0,
 ) -> list[GreedySurvey]:
     """Generate greedy (single-best choice visits) Surveys.
 
@@ -1052,6 +1056,9 @@ def gen_greedy_surveys(
     bands : `list` [ `str` ]
         Bands in which to generate greedy surveys.
         Default ['r', 'i', 'z', 'y'].
+    dark_only : `list` [`str`]
+        These bandpasses should only execute during times when the moon
+        is down and it is not twilight.
     ignore_obs : `str` or `list` of `str`
         Ignore observations by surveys that include the given substring(s).
     camera_rot_limits : `list` [ `float` ]
@@ -1065,7 +1072,7 @@ def gen_greedy_surveys(
         Used to mask regions around zenith (minutes).
     m5_weight : `float`
         The weight for the 5-sigma depth difference basis function.
-    apply_cloud_extinction : `bool`
+    apply_clouds_m5 : `bool`
         Flag to include cloud extinction into M5Diff basis function.
     footprint_weight : `float`
         The weight on the survey footprint basis function.
@@ -1112,10 +1119,12 @@ def gen_greedy_surveys(
     ]
     detailer_list.append(detailers.LabelRegionsAndDDFs())
     # This is probably False (to allow greedy survey to always run).
-    if apply_cloud_mask:
+    if extinction_limit is not None:
         # Add extinction_limit detailer for cloud masking in queue_manager.
         detailer_list.append(
-            detailers.ExtinctionLimitDetailer(extinction_limit=cloud_limit)
+            detailers.ExtinctionLimitDetailer(
+                extinction_limit=extinction_limit
+            )
         )
 
     if "u" in bands:
@@ -1131,7 +1140,7 @@ def gen_greedy_surveys(
                 bandname=bandname,
                 bandname2=None,
                 m5_weight=m5_weight,
-                apply_cloud_extinction=apply_cloud_extinction,
+                apply_clouds_m5=apply_clouds_m5,
                 footprint_weight=footprint_weight,
                 slewtime_weight=slewtime_weight,
                 stayband_weight=stayband_weight,
@@ -1151,6 +1160,8 @@ def gen_greedy_surveys(
         )
 
         if bandname in dark_only:
+            # Add some basis functions to block dark_only bandpasses from
+            # executing during bright sky conditions (twilight or moon up).
             bfs.append((bf.NotTwilightBasisFunction(), 0.0))
             bfs.append((bf.MoonAltLimitBasisFunction(alt_limit=-5), 0.0))
 
@@ -1183,8 +1194,24 @@ def gen_greedy_surveys(
 def generate_blobs(
     footprints: Footprints,
     nside: int = DEFAULT_NSIDE,
-    band1s: list[str] = ["u", "u", "g", "r", "i", "z", "y"],
-    band2s: list[str] = ["g", "r", "r", "i", "z", "y", "y"],
+    band1s: list[str] = [
+        "u",
+        "u",
+        "g",
+        "r",
+        "r",
+        "i",
+        "z",
+    ],
+    band2s: list[str] = [
+        "g",
+        "r",
+        "r",
+        "i",
+        "z",
+        "z",
+        "y",
+    ],
     ignore_obs: str | list[str] = ["DD", "twilight_near_sun", "ToO"],
     camera_rot_limits: tuple[float, float] = CAMERA_ROT_LIMITS,
     exptime: float = EXPTIME,
@@ -1192,9 +1219,7 @@ def generate_blobs(
     pair_time: float = 33.0,
     max_pair_time: float = 40.0,
     m5_weight: float = 6.0,
-    apply_cloud_extinction: bool = True,
-    apply_cloud_mask: bool = True,
-    cloud_limit: float = 1.5,
+    apply_clouds_m5: bool = True,
     footprint_weight: float = 1.5,
     slewtime_weight: float = 3.0,
     stayband_weight: float = 3.0,
@@ -1203,12 +1228,13 @@ def generate_blobs(
     good_seeing_weight: float = 3.0,
     seeing_fwhm_best: float = 0.8,
     m5_penalty_max: float = 0.5,
-    survey_start: float = SURVEY_START_MJD,
+    survey_start: float | None = None,
     scheduled_respect: float = 15.0,
     science_program: str = SCIENCE_PROGRAM,
     blob_survey_params: dict | None = None,
     standard_mask_params: dict | None = None,
     pair_pad: float = 5.0,
+    extinction_limit: float = 2.0,
 ) -> list[BlobSurvey]:
     """Generate surveys that take observations in blobs.
 
@@ -1237,7 +1263,7 @@ def generate_blobs(
         The dynamic scaling won't scale blobs beyond this.
     m5_weight : `float`
         The weight for the 5-sigma depth difference basis function.
-    apply_cloud_extinction : `bool`
+    apply_clouds_m5 : `bool`
         Flag to include cloud extinction into M5Diff basis function.
     footprint_weight : `float`
         The weight on the survey footprint basis function.
@@ -1262,10 +1288,12 @@ def generate_blobs(
         still good for the 'good seeing' images. (in mag).
     survey_start : `float`
         The mjd that the survey started (used for determining season for
-        counting good seeing images within a season).
+        counting good seeing images within a season). Default of None
+        will use footprints.mjd_start
     scheduled_respect : `float`
         Ensure that blobs don't start within this many minutes of scheduled
         observations (from a ScriptedSurvey). Also used for start of twilight.
+        In practice, this also sets the minimum pair time.
     science_program : `str`
         The science_program to use for visits from these surveys.
     blob_survey_params : `dict` or None
@@ -1280,6 +1308,9 @@ def generate_blobs(
     """
     if blob_survey_params is None:
         blob_survey_params = BLOB_SURVEY_PARAMS_DEFAULTS
+
+    if survey_start is None:
+        survey_start = footprints.footprint_list[0].mjd_start
 
     if standard_mask_params is None:
         standard_mask_params = {"nside": nside}
@@ -1311,10 +1342,12 @@ def generate_blobs(
             )
         detailer_list.append(detailers.FlushForSchedDetailer())
         detailer_list.append(detailers.LabelRegionsAndDDFs())
-        if apply_cloud_mask:
+        if extinction_limit is not None:
             # Add extinction_limit detailer for cloud masking in queue_manager.
             detailer_list.append(
-                detailers.ExtinctionLimitDetailer(extinction_limit=cloud_limit)
+                detailers.ExtinctionLimitDetailer(
+                    extinction_limit=extinction_limit
+                )
             )
 
         # List to hold tuples of (basis_function_object, weight)
@@ -1326,7 +1359,7 @@ def generate_blobs(
                 bandname=bandname,
                 bandname2=bandname2,
                 m5_weight=m5_weight,
-                apply_cloud_extinction=apply_cloud_extinction,
+                apply_clouds_m5=apply_clouds_m5,
                 footprint_weight=footprint_weight,
                 slewtime_weight=slewtime_weight,
                 stayband_weight=stayband_weight,
@@ -1459,8 +1492,6 @@ def generate_twilight_near_sun(
     stayband_weight: float = 3.0,
     band_dist_weight: float = 0.3,
     min_area: float | None = None,
-    apply_cloud_mask: bool = True,
-    cloud_limit: float = 1.5,
     bands: str = "riz",
     n_repeat: int = 4,
     sun_alt_limit: float = -14.8,
@@ -1470,6 +1501,7 @@ def generate_twilight_near_sun(
     ignore_obs: list[str] = ["DD", "pair", "long", "blob", "greedy", "template", "ToO"],
     science_program: str = SCIENCE_PROGRAM,
     standard_mask_params: dict | None = None,
+    extinction_limit: float = 2,
 ) -> list[BlobSurvey]:
     """Generate a survey for observing NEO objects in twilight.
 
@@ -1570,10 +1602,12 @@ def generate_twilight_near_sun(
         )
         detailer_list.append(detailers.RandomBandDetailer(bands=bands))
         detailer_list.append(detailers.LabelRegionsAndDDFs())
-        if apply_cloud_mask:
+        if extinction_limit is not None:
             # Add extinction_limit detailer for cloud masking in queue_manager.
             detailer_list.append(
-                detailers.ExtinctionLimitDetailer(extinction_limit=cloud_limit)
+                detailers.ExtinctionLimitDetailer(
+                    extinction_limit=extinction_limit
+                )
             )
 
         bfs = []
