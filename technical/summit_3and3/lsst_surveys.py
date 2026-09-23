@@ -606,7 +606,7 @@ def gen_template_surveys(
             bfs.append((bf.MoonAltLimitBasisFunction(alt_limit=-5), 0.0))
 
         # Turn on/off beore/after some time
-        bfs.append((bf.OnlyBeforeNightBasisFunction(night_max=night_max,
+        bfs.append((bf.OnlyDuringNightsBasisFunction(night_max=night_max,
                                                     night_min=night_min), 0.0))
 
         # Limit to only good seeing visits.
