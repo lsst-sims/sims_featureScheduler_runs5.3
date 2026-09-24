@@ -4,4 +4,6 @@
 # python shrink_fp.py --dust_limit 0.12
 # python shrink_fp.py --dust_limit 0.08
 # python shrink_fp.py --dust_limit 0.05
-python shrink_fp.py --dust_limit 0.10
+# python shrink_fp.py --dust_limit 0.10
+python shrink_fp.py --dust_limit 0.09
+python shrink_fp.py --dust_limit 0.11
