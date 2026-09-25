@@ -31,7 +31,7 @@ import too_surveys as too_surveys
 import numpy as np
 import rubin_scheduler.scheduler.basis_functions as bf
 import rubin_scheduler.scheduler.detailers as detailers
-from lsst.ts.fbs.utils.maintel.lsst_ddf_presched import read_ddf_obs_array
+from lsst_ddf_presched import read_ddf_obs_array
 from rubin_scheduler.scheduler.schedulers import BaseQueueManager, CoreScheduler
 from rubin_scheduler.scheduler.surveys import ScriptedSurvey
 from rubin_scheduler.utils import DEFAULT_NSIDE
