@@ -13,6 +13,7 @@ from rubin_nights import connections
 from rubin_nights import lfa_data
 import rubin_nights.dayobs_utils as rn_dayobs
 import h5py
+import warnings
 
 os.environ["S3_ENDPOINT_URL"] = "https://s3dfrgw.slac.stanford.edu/"
 os.environ["LSST_DISABLE_BUCKET_VALIDATION"] = "1"
@@ -47,6 +48,7 @@ class CloudsFromDream(object):
                 # Querry failed, just give up
 
                 # XXX--should prob throw a warning or something
+                warnings.warn("failed to get dayobs %i" % day_obs)
                 self.mjds = np.array([])
                 self.clouds_cleaned = np.array([])
                 self.day_obs = day_obs
@@ -74,7 +76,7 @@ class CloudsFromDream(object):
                         clouds_cleaned.append(dream["clouds"])
                         mjds.append(Time(dream["time"]).mjd)
                 except:
-                    pass
+                    warnings.warn("failed to get row on dayobs %i" % day_obs)
             self.mjds = np.array(mjds)
             self.clouds_cleaned = np.vstack(clouds_cleaned)
             # Set so we know we have already loaded this day_obs
