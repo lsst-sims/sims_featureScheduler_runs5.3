@@ -48,7 +48,7 @@ class CloudsFromDream(object):
                 # Querry failed, just give up
 
                 # XXX--should prob throw a warning or something
-                warnings.warn("failed to get dayobs %i" % day_obs)
+                warnings.warn("failed to get dayobs %s" % day_obs)
                 self.mjds = np.array([])
                 self.clouds_cleaned = np.array([])
                 self.day_obs = day_obs
@@ -76,7 +76,7 @@ class CloudsFromDream(object):
                         clouds_cleaned.append(dream["clouds"])
                         mjds.append(Time(dream["time"]).mjd)
                 except:
-                    warnings.warn("failed to get row on dayobs %i" % day_obs)
+                    warnings.warn("failed to get row on dayobs %s" % day_obs)
             self.mjds = np.array(mjds)
             self.clouds_cleaned = np.vstack(clouds_cleaned)
             # Set so we know we have already loaded this day_obs
