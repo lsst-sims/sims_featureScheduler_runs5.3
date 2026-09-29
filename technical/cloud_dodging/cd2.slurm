@@ -25,7 +25,7 @@ source ~/anaconda3/etc/profile.d/conda.sh
 conda activate rubin14
 export OPENBLAS_NUM_THREADS=1
 
-python cloud_dodge.py --survey_length 365
+python cloud_dodge.py --survey_length 60
 
 # rm maf.sh
 #  
