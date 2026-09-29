@@ -34,7 +34,7 @@ from rubin_scheduler.scheduler.utils import (
 from rubin_scheduler.site_models import Almanac
 from rubin_scheduler.utils import DEFAULT_NSIDE
 
-SURVEY_START_MJD = Time("2026-10-15T12:00:00").mjd
+SURVEY_START_MJD = Time("2025-07-01T12:00:00").mjd
 
 
 def get_footprints(
