@@ -7,6 +7,8 @@ from rubin_scheduler.scheduler.utils import Phase3AreaMap
 
 
 class NewBase(Phase3AreaMap):
+    """Turn down the dust limit, Make sure SCP gets blocked off early
+    """
     def __init__(self, dust_limit=0.11, scp_dec_max=-66, **kwargs):
         super().__init__(dust_limit=dust_limit, scp_dec_max=scp_dec_max, **kwargs)
 
