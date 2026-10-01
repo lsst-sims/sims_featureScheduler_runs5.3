@@ -14,7 +14,7 @@ from rubin_scheduler.scheduler.targetofo import gen_all_events
 from rubin_scheduler.scheduler.utils import ObservationArray, CurrentAreaMap
 from rubin_scheduler.utils import DEFAULT_NSIDE, mjd2dayobs
 
-from new_footprints import FootprintMod1, FootprintMod2
+from new_footprints import FootprintMod1, FootprintMod2, FootprintMod3, FootprintMod4
 
 from fbs_config import SURVEY_START_MJD, get_scheduler
 
@@ -190,6 +190,11 @@ if __name__ == "__main__":
         sky = FootprintMod1(nside=nside)
     elif args.fp_num == 2:
         sky = FootprintMod2(nside=nside)
+    elif args.fp_num == 3:
+        sky = FootprintMod3(nside=nside)
+    elif args.fp_num == 4:
+        sky = FootprintMod4(nside=nside)
+
 
     nside, scheduler = get_scheduler(for_simulation=True, fp_obj=sky)
 

@@ -1,7 +1,11 @@
-__all__ = ("FootprintMod1", "FootprintMod2",)
+__all__ = ("FootprintMod1", "FootprintMod2", "FootprintMod3", "FootprintMod4")
 import numpy as np
 import healpy as hp
+from astropy.io import fits
 from rubin_scheduler.utils import angular_separation
+import os
+import copy
+from rubin_scheduler.data import get_data_dir
 
 from rubin_scheduler.scheduler.utils import Phase3AreaMap
 
@@ -50,9 +54,9 @@ class NewBase(Phase3AreaMap):
         self.add_magellanic_clouds(magellenic_clouds_ratios)
         self.add_lowdust_wfd(low_dust_ratios)
         self.add_virgo_cluster(virgo_ratios)
+        
         self.add_bulgy(bulge_ratios)
         self.add_nes(nes_ratios)
-        
         self.add_euclid_overlap(euclid_ratios)
         self.add_scp(scp_ratios)
         self.add_dusty_plane(dusty_plane_ratios)
@@ -103,3 +107,57 @@ class FootprintMod2(NewBase):
             self.pix_labels[indx] = label
             for bandname in band_ratios:
                 self.healmaps[bandname][indx] = band_ratios[bandname]
+
+
+class FootprintMod3(NewBase):
+
+    def __init__(self, gal_priority_cut=1.503, **kwargs):
+        super().__init__(**kwargs)
+        self.gal_priority_cut = gal_priority_cut
+
+    def add_bulgy(self, band_ratios, label="bulgy",
+                  map_path='maps/GalacticPlanePriorityMaps/priority_GalPlane_footprint_map_data_sum.fits'):
+        """Define a bulge region, where the 'bulge' is a series of
+        circles set by points defined to match as best as possible the
+        map requested by the SMWLV working group on galactic plane coverage.
+        Implemented in v3.0.
+        Updates self.healmaps and self.pix_labels.
+
+        Parameters
+        ----------
+        band_ratios : `dict` {`str`: `float`}
+            Dictionary of weights per band for the footprint.
+        label : `str`, optional
+            Label to apply to the resulting footprint
+        """
+
+        data_path = get_data_dir()
+        map_file = os.path.join(data_path, map_path)
+        hdul = fits.open(map_file)
+        combined_map = copy.copy(hdul[1].data["combined_map"])
+        hdul.close()
+
+        indx_below = np.where(combined_map < self.gal_priority_cut)[0]
+        combined_map[indx_below] = 0
+
+        combined_map = hp.ud_grade(combined_map, self.nside)
+
+        # XXX--magic numbers to replace with proper limits
+        # that are already set elsewhere
+        indx_cut = np.where(self.dec > 10)[0]
+        combined_map[indx_cut] = 0
+
+        indx_cut = np.where((self.dec > 0) & (self.ra < 180))[0]
+        combined_map[indx_cut] = 0
+
+        indx = np.where((combined_map > 0) & (self.pix_labels == ""))
+        self.pix_labels[indx] = label
+        for bandname in band_ratios:
+            self.healmaps[bandname][indx] = band_ratios[bandname]
+
+
+class FootprintMod4(FootprintMod3):
+
+    def __init__(self, gal_priority_cut=2.0, **kwargs):
+        super().__init__(gal_priority_cut=gal_priority_cut, **kwargs)
+        self.gal_priority_cut = gal_priority_cut
