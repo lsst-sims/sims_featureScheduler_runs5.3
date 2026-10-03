@@ -14,7 +14,13 @@ from rubin_scheduler.scheduler.targetofo import gen_all_events
 from rubin_scheduler.scheduler.utils import ObservationArray, CurrentAreaMap
 from rubin_scheduler.utils import DEFAULT_NSIDE, mjd2dayobs
 
-from new_footprints import FootprintMod1, FootprintMod2, FootprintMod3, FootprintMod4
+from new_footprints import (
+    FootprintMod1,
+    FootprintMod2,
+    FootprintMod3,
+    FootprintMod4,
+    FootprintMod5,
+)
 
 from fbs_config import SURVEY_START_MJD, get_scheduler
 
@@ -71,7 +77,7 @@ def make_observatory(
     readtime: float = 3.07,
     band_changetime: float = 120.0,
     new_downtime_ndays=3700,
-    cloud_offset_year: float = 7.
+    cloud_offset_year: float = 7.0,
 ):
 
     survey_info = survey_times(
@@ -194,7 +200,8 @@ if __name__ == "__main__":
         sky = FootprintMod3(nside=nside)
     elif args.fp_num == 4:
         sky = FootprintMod4(nside=nside)
-
+    elif args.fp_num == 5:
+        sky = FootprintMod5(nside=nside)
 
     nside, scheduler = get_scheduler(for_simulation=True, fp_obj=sky)
 
@@ -203,7 +210,7 @@ if __name__ == "__main__":
         scale=too_scale,
         nside=nside,
         mjd_start=SURVEY_START_MJD,
-        mjd_end=SURVEY_START_MJD + np.max([365.25*10, args.survey_length]),
+        mjd_end=SURVEY_START_MJD + np.max([365.25 * 10, args.survey_length]),
     )
 
     observatory = make_observatory(

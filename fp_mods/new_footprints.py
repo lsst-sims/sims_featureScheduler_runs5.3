@@ -1,4 +1,4 @@
-__all__ = ("FootprintMod1", "FootprintMod2", "FootprintMod3", "FootprintMod4")
+__all__ = ("FootprintMod1", "FootprintMod2", "FootprintMod3", "FootprintMod4", "FootprintMod5")
 import numpy as np
 import healpy as hp
 from astropy.io import fits
@@ -115,6 +115,14 @@ class FootprintMod3(NewBase):
         super().__init__(**kwargs)
         self.gal_priority_cut = gal_priority_cut
 
+    def read_galactic_plane_map(self, map_path):
+        data_path = get_data_dir()
+        map_file = os.path.join(data_path, map_path)
+        hdul = fits.open(map_file)
+        combined_map = copy.copy(hdul[1].data["combined_map"])
+        hdul.close()
+        return combined_map
+
     def add_bulgy(self, band_ratios, label="bulgy",
                   map_path='maps/GalacticPlanePriorityMaps/priority_GalPlane_footprint_map_data_sum.fits'):
         """Define a bulge region, where the 'bulge' is a series of
@@ -131,11 +139,7 @@ class FootprintMod3(NewBase):
             Label to apply to the resulting footprint
         """
 
-        data_path = get_data_dir()
-        map_file = os.path.join(data_path, map_path)
-        hdul = fits.open(map_file)
-        combined_map = copy.copy(hdul[1].data["combined_map"])
-        hdul.close()
+        combined_map = self.read_galactic_plane_map(map_path=map_path)
 
         indx_below = np.where(combined_map < self.gal_priority_cut)[0]
         combined_map[indx_below] = 0
@@ -161,3 +165,23 @@ class FootprintMod4(FootprintMod3):
     def __init__(self, gal_priority_cut=2.0, **kwargs):
         super().__init__(gal_priority_cut=gal_priority_cut, **kwargs)
         self.gal_priority_cut = gal_priority_cut
+
+
+class FootprintMod5(FootprintMod3):
+    """Try smoothing the combined map
+    """
+    def __init__(self, gal_priority_cut=1.65, gal_map_smooth_fwhm=3., **kwargs):
+        super().__init__(gal_priority_cut=gal_priority_cut, **kwargs)
+        self.gal_map_smooth_fwhm = np.radians(gal_map_smooth_fwhm)
+
+    def read_galactic_plane_map(self, map_path):
+        data_path = get_data_dir()
+        map_file = os.path.join(data_path, map_path)
+        hdul = fits.open(map_file)
+        combined_map = copy.copy(hdul[1].data["combined_map"])
+        hdul.close()
+
+        combined_map = hp.sphtfunc.smoothing(combined_map, fwhm=self.gal_map_smooth_fwhm)
+
+        return combined_map
+
