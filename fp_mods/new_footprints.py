@@ -146,12 +146,10 @@ class FootprintMod3(NewBase):
 
         combined_map = hp.ud_grade(combined_map, self.nside)
 
-        # XXX--magic numbers to replace with proper limits
-        # that are already set elsewhere
-        indx_cut = np.where(self.dec > 10)[0]
+        indx_cut = np.where(self.dec > self.dusty_dec_max)[0]
         combined_map[indx_cut] = 0
 
-        indx_cut = np.where((self.dec > 0) & (self.ra < 180))[0]
+        indx_cut = np.where((self.dec > self.eclip_dec_min) & (self.ra < 180))[0]
         combined_map[indx_cut] = 0
 
         indx = np.where((combined_map > 0) & (self.pix_labels == ""))
