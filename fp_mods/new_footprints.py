@@ -257,7 +257,7 @@ class FootprintMod4(FootprintMod3):
 class FootprintMod5(FootprintMod3):
     """Try smoothing the combined map
     """
-    def __init__(self, gal_priority_cut=1.65, gal_map_smooth_fwhm=3., **kwargs):
+    def __init__(self, gal_priority_cut=1.72, gal_map_smooth_fwhm=3., **kwargs):
         super().__init__(gal_priority_cut=gal_priority_cut, **kwargs)
         self.gal_map_smooth_fwhm = np.radians(gal_map_smooth_fwhm)
 
@@ -271,5 +271,6 @@ class FootprintMod5(FootprintMod3):
         combined_map = hp.sphtfunc.smoothing(combined_map, fwhm=self.gal_map_smooth_fwhm)
 
         return combined_map
+
 
 
