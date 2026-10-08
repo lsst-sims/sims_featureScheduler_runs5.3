@@ -1,4 +1,5 @@
-__all__ = ("FootprintMod1", "FootprintMod2", "FootprintMod3", "FootprintMod4", "FootprintMod5")
+__all__ = ("FootprintMod1", "FootprintMod2", "FootprintMod3", "FootprintMod4", "FootprintMod5",
+           "FootprintMod6")
 import numpy as np
 import healpy as hp
 from astropy.io import fits
@@ -7,7 +8,62 @@ import os
 import copy
 from rubin_scheduler.data import get_data_dir
 
+from astropy import units as u
+from astropy.coordinates import SkyCoord
+from rubin_scheduler.utils import _build_tree, _hpid2_ra_dec, xyz_from_ra_dec
+
 from rubin_scheduler.scheduler.utils import Phase3AreaMap
+
+
+class TrilegalStellarDensity(object):
+
+    def __init__(self, band="r", nside=64, ext=True):
+        self.map_dir = os.path.join(get_data_dir(), "maps", "TriMaps")
+        self.band = band
+        self.keynames = [
+            f"starLumFunc_{self.band}",
+            f"starMapBins_{self.band}",
+        ]
+        self.nside = nside
+        self.ext = ext
+        self.star_map = None
+
+    def _read_map(self):
+        if self.ext:
+            filename = "TRIstarDensity_%s_nside_%i_ext.npz" % (
+                self.band,
+                self.nside,
+            )
+        else:
+            filename = "TRIstarDensity_%s_nside_%i.npz" % (self.band, self.nside)
+        star_map = np.load(os.path.join(self.map_dir, filename))
+        self.star_map = star_map["starDensity"].copy()
+        self.star_map_bins = star_map["bins"].copy()
+        self.starmap_nside = hp.npix2nside(np.size(self.star_map[:, 0]))
+        # Note, the trilegal maps are in galactic coordinates
+        # and use nested healpix.
+        gal_l, gal_b = _hpid2_ra_dec(self.nside, np.arange(hp.nside2npix(self.nside)), nest=True)
+
+        # Convert that to RA,dec. Then do nearest neighbor lookup.
+        c = SkyCoord(l=gal_l * u.rad, b=gal_b * u.rad, frame="galactic").transform_to("icrs")
+        ra = c.ra.rad
+        dec = c.dec.rad
+
+        self.tree = _build_tree(ra, dec)
+
+    def __call__(self, ra, dec):
+        """ra, dec in degrees I think
+        """
+        if self.star_map is None:
+            self._read_map()
+        result = {}
+        x, y, z = xyz_from_ra_dec(ra, dec)
+        dist, indices = self.tree.query(list(zip(x, y, z)))
+
+        result["starLumFunc_%s" % self.band] = self.star_map[indices, :]
+        result["starMapBins_%s" % self.band] = self.star_map_bins
+        return result
+
 
 
 class NewBase(Phase3AreaMap):
@@ -62,6 +118,72 @@ class NewBase(Phase3AreaMap):
         self.add_dusty_plane(dusty_plane_ratios)
 
         return self.healmaps, self.pix_labels
+
+
+class FootprintMod6(NewBase):
+    """Based on Knute's footprint from here:
+    https://github.com/knutago/footprint-taskforce/blob/main/footprint-taskforce_GPmod_1.ipynb
+    """
+
+    def __init__(self, dust_limit=0.12, scp_dec_max=-66, stellar_n_limit=0.0002, 
+                 stellar_mag_limit=17., band="r", **kwargs):
+        super().__init__(dust_limit=dust_limit, scp_dec_max=scp_dec_max, **kwargs)
+
+        self.stellar_n_limit = stellar_n_limit  # stars / arcsec^2 
+        self.stellar_mag_limit = stellar_mag_limit
+        # Should probably be stellar density band
+        self.band = band
+
+        self.tsd_obj = TrilegalStellarDensity(band=band)
+        self.tsd = self.tsd_obj(self.ra, self.dec)
+
+    def add_lowdust_wfd(self, band_ratios, label="lowdust"):
+        """Define a low-dust WFD region.
+        Updates self.healmaps and self.pix_labels.
+
+        Parameters
+        ----------
+        band_ratios : `dict` {`str`: `float`}
+            Dictionary of weights per band for the footprint.
+        label : `str`, optional
+            Label to apply to the resulting footprint
+        """
+        dustfree = np.where(
+            (self.dec > self.low_dust_dec_min) & (self.dec < self.low_dust_dec_max) & (self.low_dust == 1),
+            1,
+            0,
+        )
+
+        dustfree[np.where(self.low_dust == 0)] = 0
+
+        if self.adjust_halves > 0:
+            dustfree = np.where(
+                (self.gal_lat < 0) & (self.dec > self.low_dust_dec_max - self.adjust_halves),
+                0,
+                dustfree,
+            )
+
+        bin_diff = self.tsd['starMapBins_%s' % self.band] - self.stellar_mag_limit
+        stellar_bin_indx = np.min(np.where(np.abs(bin_diff) < 1e-6)[0])
+        if np.size(stellar_bin_indx) == 0:
+            raise ValueError("stellar_mag_limit = %f not valid" % self.stellar_mag_limit)
+
+        low_stars = np.ones(dustfree.size)
+
+        low_stars[np.where(self.tsd['starLumFunc_%s' % self.band][:, stellar_bin_indx] < self.stellar_n_limit)] = 0
+
+        import pdb ; pdb.set_trace()
+        # Where we meet both dust and stellar density cuts.
+        # And nothing else has been labeled
+        indx = np.where((dustfree > 0) & (low_stars > 0) & (self.pix_labels == ""))[0]
+
+        self.pix_labels[indx] = label
+        for bandname in band_ratios:
+            self.healmaps[bandname][indx] = band_ratios[bandname]
+
+
+
+
 
 
 class FootprintMod1(NewBase):
@@ -182,4 +304,5 @@ class FootprintMod5(FootprintMod3):
         combined_map = hp.sphtfunc.smoothing(combined_map, fwhm=self.gal_map_smooth_fwhm)
 
         return combined_map
+
 
