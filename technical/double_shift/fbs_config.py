@@ -413,7 +413,7 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
         toos,
         roman_micro,
         ddfs,
-        template_surveys,
+        #template_surveys,
         long_gaps,
         blobs,
         neo_micro,
