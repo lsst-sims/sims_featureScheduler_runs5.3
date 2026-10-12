@@ -4,7 +4,7 @@ Turning off template tier since that would keep most things full sky anyway.
 number of constant seasons:
 
 0: Ends non-uniform
-1: Ends uniform, looks like it rolls properly in Y1
+1: Ends uniform, looks like it rolls properly in Y1. Get uniform coverage Y 3,6,9,10
 2: Ends Uniform, has uniform Y1
 3: Ends non-uniform, has uniform Y1.
 
