@@ -398,7 +398,7 @@ class HorseshoeAvoidanceDetailer(BaseDetailer):
                         current = str(observation_array[col][idx])
                         if self.note_tag not in current:
                             max_len = 59
-                            separator = ";" if current else ""
+                            separator = ", " if current else ""
                             combined = f"{current}{separator}{self.note_tag}"[
                                 :max_len
                             ]
