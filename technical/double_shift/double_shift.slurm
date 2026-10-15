@@ -25,7 +25,7 @@ source ~/anaconda3/etc/profile.d/conda.sh
 conda activate rubin14
 export OPENBLAS_NUM_THREADS=1
 
-python double_shift.py
+python double_shift2.py
 
 # rm maf.sh
 #  
