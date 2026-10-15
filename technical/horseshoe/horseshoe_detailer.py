@@ -393,7 +393,7 @@ class HorseshoeAvoidanceDetailer(BaseDetailer):
 
             # Annotate scheduler notes to trace which visits were modified
             if self.annotate_note:
-                for col in ["scheduler_note", "note"]:
+                for col in ["observation_reason"]:
                     if col in observation_array.dtype.names:
                         current = str(observation_array[col][idx])
                         if self.note_tag not in current:
