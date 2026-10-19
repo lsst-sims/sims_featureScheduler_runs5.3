@@ -227,13 +227,13 @@ class HorseshoeAvoidanceDetailer(BaseDetailer):
         self.star_mags["u"] = umag
 
         # Convert to 3D Cartesian unit vectors for fast spatial indexing
-        ra_rad = np.radians(ra_deg)
-        dec_rad = np.radians(dec_deg)
+        self.star_ra_rad = np.radians(ra_deg)
+        self.star_dec_rad = np.radians(dec_deg)
 
         self.xyz_stars = np.column_stack([
-            np.cos(dec_rad) * np.cos(ra_rad),
-            np.cos(dec_rad) * np.sin(ra_rad),
-            np.sin(dec_rad),
+            np.cos(self.star_dec_rad) * np.cos(self.star_ra_rad),
+            np.cos(self.star_dec_rad) * np.sin(self.star_ra_rad),
+            np.sin(self.star_dec_rad),
         ])
         self.tree = cKDTree(self.xyz_stars)
 
