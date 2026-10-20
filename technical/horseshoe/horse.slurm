@@ -8,7 +8,7 @@
 #SBATCH --error=output-%j.txt
 #
 #SBATCH --nodes=1                       # Number of nodes
-#SBATCH --ntasks=1
+#SBATCH --ntasks=3
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=40g
 #
@@ -25,7 +25,7 @@ source ~/anaconda3/etc/profile.d/conda.sh
 conda activate rubin14
 export OPENBLAS_NUM_THREADS=1
 
-python horseshoe.py
+cat horse.sh | parallel -j 3
 
 # rm maf.sh
 #  

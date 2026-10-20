@@ -30,14 +30,20 @@ from survey_start import SURVEY_START_MJD
 from horseshoe_detailer import HorseshoeAvoidanceDetailer
 
 
-def generate_qm(nside=32) -> BaseQueueManager:
+def generate_qm(nside=32, inner_radius_deg=1.995,
+                outer_radius_deg=2.025,
+                offset_ra_deg=0.05, offset_dec_deg=0.05) -> BaseQueueManager:
     """Generate a QueueManager object."""
 
     detailer_list = []
     detailer_list.append(detailers.RotspUpdateDetailer())
 
     # Avoid bright stars
-    detailer_list.append(HorseshoeAvoidanceDetailer(nside=nside))
+    detailer_list.append(HorseshoeAvoidanceDetailer(inner_radius_deg=inner_radius_deg,
+                                                    outer_radius_deg=outer_radius_deg,
+                                                    offset_ra_deg=offset_ra_deg,
+                                                    offset_dec_deg=offset_dec_deg,
+                                                    nside=nside))
 
     bf_list = []
     # This should get zenith masked
@@ -49,7 +55,8 @@ def generate_qm(nside=32) -> BaseQueueManager:
     return qm
 
 
-def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
+def get_scheduler(for_simulation=False, inner_radius_deg=None, outer_radius_deg=None,
+                  offset_ra_deg=None, offset_dec_deg=None) -> tuple[int, CoreScheduler]:
     """Construct the LSST survey scheduler.
 
     The parameters are not accessible when calling as 'config'.
@@ -428,7 +435,9 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
         greedy,
     ]
 
-    qm = generate_qm(nside=nside)
+    qm = generate_qm(nside=nside, inner_radius_deg=inner_radius_deg,
+                     outer_radius_deg=outer_radius_deg, 
+                     offset_ra_deg=offset_ra_deg, offset_dec_deg=offset_dec_deg)
 
     # Combine into CoreScheduler
     scheduler = CoreScheduler(

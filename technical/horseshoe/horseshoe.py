@@ -160,6 +160,7 @@ def sched_argparser() -> argparse.ArgumentParser:
         default="",
         help="Directory for scheduler snapshots.",
     )
+    parser.add_argument("--radius_choice", type=int, default=0)
 
     return parser
 
@@ -173,13 +174,22 @@ if __name__ == "__main__":
     out_dir = args.out_dir
     fileroot, extra_info = set_run_info(
         dbroot=dbroot,
-        file_end="v5.3.7_",
+        file_end="radius_%i_v5.3.7_" % args.radius_choice,
         out_dir=out_dir,
     )
     years = np.round(args.survey_length / 365.25)
     filename = os.path.join(fileroot + "%iyrs.db" % years)
 
-    nside, scheduler = get_scheduler(for_simulation=True)
+    inner_radius_deg = [1.995, 1.9, 1.7]
+    outer_radius_deg = [2.025, 2.1, 2.2]
+    offset_deg = [0.05, 0.21, 0.51]
+
+    inner_radius_deg = inner_radius_deg[args.radius_choice]
+    outer_radius_deg = outer_radius_deg[args.radius_choice]
+    offset_deg = offset_deg[args.radius_choice]
+
+    nside, scheduler = get_scheduler(for_simulation=True, inner_radius_deg=inner_radius_deg,
+                     outer_radius_deg=outer_radius_deg, offset_ra_deg=offset_deg, offset_dec_deg=offset_deg)
 
     too_scale = 1.0
     sim_ToOs, event_table = gen_all_events(
