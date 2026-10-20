@@ -1,11 +1,12 @@
 __all__ = ("FootprintMod1", "FootprintMod2", "FootprintMod3", "FootprintMod4", "FootprintMod5",
-           "FootprintMod6")
+           "FootprintMod6", "FootprintMod7")
 import numpy as np
 import healpy as hp
 from astropy.io import fits
 from rubin_scheduler.utils import angular_separation
 import os
 import copy
+import json
 from rubin_scheduler.data import get_data_dir
 from matplotlib.path import Path
 
@@ -273,4 +274,29 @@ class FootprintMod5(FootprintMod3):
         return combined_map
 
 
+class FootprintMod7(NewBase):
+    """Try smoothing the combined map
+    """
+    def __init__(self, dust_limit=0.12,**kwargs):
+        super().__init__(dust_limit=dust_limit, **kwargs)
+       
+
+    def add_bulgy(self, band_ratios, label="bulgy"):
+        in_bridge = np.zeros(self.ra.size)
+
+        with open('street_fp.json', 'r') as file:
+            data = json.load(file)
+            bridge_array = np.array(data['new_gp_pixels'])
+
+        guess_nside = 64
+        in_bridge = np.zeros(hp.nside2npix(guess_nside))
+        in_bridge[bridge_array] = 1
+
+        in_bridge = hp.ud_grade(in_bridge, self.nside)
+
+        # Add dec less than dec max
+        indx = np.where((in_bridge > 0) & (self.pix_labels == ""))
+        self.pix_labels[indx] = label
+        for bandname in band_ratios:
+            self.healmaps[bandname][indx] = band_ratios[bandname]
 

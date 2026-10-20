@@ -27,6 +27,8 @@ export OPENBLAS_NUM_THREADS=1
 
 cat fpm.sh | parallel -j 1
 
+
+
 # rm maf.sh
 #  
 # ls *_10yrs.db | xargs -I'{}' echo "scimaf_dir --db '{}'" > maf.sh
