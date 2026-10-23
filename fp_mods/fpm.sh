@@ -5,4 +5,6 @@
 # python fp_mod.py --fp_num 4
 # python fp_mod.py --fp_num 5
 #python fp_mod.py --fp_num 6
-python fp_mod.py --fp_num 7
+#python fp_mod.py --fp_num 7
+python fp_mod.py --fp_num 8
+python fp_mod.py --fp_num 9
