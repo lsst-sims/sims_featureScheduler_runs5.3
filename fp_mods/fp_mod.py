@@ -22,7 +22,8 @@ from new_footprints import (
     FootprintMod5,
     FootprintMod6,
     FootprintMod7,
-    FootprintMod7,
+    FootprintMod8,
+    FootprintMod9,
 )
 
 from fbs_config import SURVEY_START_MJD, get_scheduler
@@ -211,6 +212,8 @@ if __name__ == "__main__":
         sky = FootprintMod7(nside=nside)
     elif args.fp_num == 8:
         sky = FootprintMod8(nside=nside)
+    elif args.fp_num == 9:
+        sky = FootprintMod9(nside=nside)
 
     nside, scheduler = get_scheduler(for_simulation=True, fp_obj=sky)
 
