@@ -101,13 +101,13 @@ class FootprintMod6(NewBase):
         dust_limit=0.12,
         scp_dec_max=-66,
         bridge_width=8.43,
-        bulgy_smooth_radius=6.2,
+        bulgy_smooth_fwhm=6.2,
         bulgy_smooth_cut=0.074,
         **kwargs
     ):
         super().__init__(dust_limit=dust_limit, scp_dec_max=scp_dec_max, **kwargs)
         self.bridge_width = bridge_width
-        self.bulgy_smooth_radius = np.radians(bulgy_smooth_radius)
+        self.bulgy_smooth_fwhm = np.radians(bulgy_smooth_fwhm)
         self.bulgy_smooth_cut = bulgy_smooth_cut
 
     def add_ecliptic_bridge(self, band_ratios, label="ecliptic_bridge"):
@@ -169,7 +169,7 @@ class FootprintMod6(NewBase):
             indx_path = box_path.contains_points(points_to_check)
             in_box[indx_path] = 1
 
-        in_box = hp.sphtfunc.smoothing(in_box, fwhm=self.bulgy_smooth_radius)
+        in_box = hp.sphtfunc.smoothing(in_box, fwhm=self.bulgy_smooth_fwhm)
 
         # Do not go far north
         in_box[np.where(self.dec > self.dusty_dec_max)] = 0
@@ -356,8 +356,7 @@ class FootprintMod8(NewBase):
 
         load.close()
 
-
-    def add_ecliptic_bridge(self, band_ratios, label="bridge"):
+    def add_ecliptic_bridge(self, band_ratios, label="ecliptic_bridge"):
         indx = np.where(self.labels == "bridge")[0]
 
         self.pix_labels[indx] = label
@@ -382,23 +381,19 @@ class FootprintMod9(NewBase):
         self,
         dust_limit=0.12,
         scp_dec_max=-66,
-        bridge_width=13.0,
-        bulgy_smooth_radius=6.2,
-        bulgy_smooth_cut=0.074,
+        bridge_width=14.0,
         bulgy_dec_max=0,
         stellar_density_max=2600,
         stellar_band="r",
         stellar_mag_limit=17.0,
         smooth_starfree_fwhm=2.0,
         gal_map_smooth_fwhm=8.0,
-        gal_priority_cut=1.77,
+        gal_priority_cut=1.75,
         rgps_dec_max=0.,
         **kwargs
     ):
         super().__init__(dust_limit=dust_limit, scp_dec_max=scp_dec_max, **kwargs)
         self.bridge_width = bridge_width
-        self.bulgy_smooth_radius = np.radians(bulgy_smooth_radius)
-        self.bulgy_smooth_cut = bulgy_smooth_cut
         self.bulgy_dec_max = bulgy_dec_max
 
         self.gal_map_smooth_fwhm = np.radians(gal_map_smooth_fwhm)
@@ -546,11 +541,34 @@ class FootprintMod9(NewBase):
         combined_map = copy.copy(hdul[1].data["combined_map"])
         hdul.close()
 
-        combined_map = hp.sphtfunc.smoothing(
-            combined_map, fwhm=self.gal_map_smooth_fwhm
-        )
-
         return combined_map
+
+
+    def roman_footprint(self):
+
+        in_roman_footprint = np.zeros(hp.nside2npix(self.nside))
+
+        points = [
+            # [100.90, 9.55, 3],
+            # [84.92, -5.71, 3],
+            [266.3, -29, 17],
+            [279, -13, 10],
+            [256, -45, 11],
+            [155, -56.5, 6.5],
+            [172, -62, 5],
+            [190, -65, 5],
+            [210, -64, 5],
+            [242, -58, 6.5],
+            [225, -60, 6.5],
+            [220, -62, 8],  # Bonus manual point to get things connected!
+        ]
+        for point in points:
+            dist = angular_separation(self.ra, self.dec, point[0], point[1])
+            indx = np.where((dist < point[2]/2.))
+            in_roman_footprint[indx] = 1
+
+        return in_roman_footprint
+
 
     def add_bulgy(
         self,
@@ -568,8 +586,15 @@ class FootprintMod9(NewBase):
             Label to apply to the resulting footprint
         """
 
-        # Read and smooth the TVS priority map.
+        # Read gal map
         combined_map = self.read_galactic_plane_map(map_path=map_path)
+
+        combined_map = hp.sphtfunc.smoothing(
+            combined_map, fwhm=self.gal_map_smooth_fwhm
+        )
+
+        # Construcft a Roman footprint map
+        roman_footprint = self.roman_footprint()
 
         indx_below = np.where(combined_map < self.gal_priority_cut)[0]
         combined_map[indx_below] = 0
@@ -578,11 +603,14 @@ class FootprintMod9(NewBase):
 
         indx_cut = np.where(self.dec > self.rgps_dec_max)[0]
         combined_map[indx_cut] = 0
+        roman_footprint[indx_cut] = 0
 
         indx_cut = np.where((self.dec > self.eclip_dec_min) & (self.ra < 180))[0]
         combined_map[indx_cut] = 0
+        roman_footprint[indx_cut] = 0
 
-        indx = np.where((combined_map > 0) & (self.pix_labels == ""))
+
+        indx = np.where( ((combined_map > 0) | (roman_footprint > 0)) & (self.pix_labels == ""))
         self.pix_labels[indx] = label
         for bandname in band_ratios:
             self.healmaps[bandname][indx] = band_ratios[bandname]
