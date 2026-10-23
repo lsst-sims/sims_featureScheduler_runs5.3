@@ -8,6 +8,7 @@ __all__ = (
     "FootprintMod7",
     "FootprintMod8",
     "FootprintMod9",
+    "FootprintMod10",
 )
 import numpy as np
 import healpy as hp
@@ -609,8 +610,18 @@ class FootprintMod9(NewBase):
         combined_map[indx_cut] = 0
         roman_footprint[indx_cut] = 0
 
-
-        indx = np.where( ((combined_map > 0) | (roman_footprint > 0)) & (self.pix_labels == ""))
+        indx = np.where(((combined_map > 0) | (roman_footprint > 0)) & (self.pix_labels == ""))
         self.pix_labels[indx] = label
         for bandname in band_ratios:
             self.healmaps[bandname][indx] = band_ratios[bandname]
+
+
+class FootprintMod10(FootprintMod9):
+    """Make a shorter version of Knut's FootprintMod8"""
+
+    def __init__(
+        self,
+        stellar_density_max=1000,
+        **kwargs
+    ):
+        super().__init__(stellar_density_max=stellar_density_max, **kwargs)
