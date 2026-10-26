@@ -16,6 +16,11 @@ from rubin_scheduler.utils import DEFAULT_NSIDE, mjd2dayobs
 
 from fbs_config import SURVEY_START_MJD, get_scheduler
 
+# Be able to run offline. Maybe wrap so it checks and runs
+# if needed.
+from astropy.utils.iers import conf
+conf.auto_max_age = None
+
 EXPECTED_WAIT_SETTLE = 3.0
 CURRENT_TMA_DEFAULT = {
     "azimuth_maxspeed": 2.0,
