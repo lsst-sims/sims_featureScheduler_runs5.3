@@ -8,7 +8,7 @@ from survey_start import SURVEY_START_MJD
 
 
 def make_desi_footprints(nside=DEFAULT_NSIDE, mjd_start=SURVEY_START_MJD):
-    """Make some footprint objects
+    """make a footprint basis function for the DESI observations.
     """
 
     ra, dec = hpid2_ra_dec(nside, np.arange(hp.nside2npix(nside)))
@@ -28,7 +28,7 @@ def make_desi_footprints(nside=DEFAULT_NSIDE, mjd_start=SURVEY_START_MJD):
     fpc = FootprintCount(mjd_start, nside=nside)
     fpc.set_footprint("u", result)
     bf = FootprintCountBasisFunction(bandname="u", nside=nside, footprint=fpc, mult_factor=1.,
-                                     mask_reward_below=-2, mask_above_count=4,)
+                                     mask_reward_below=-4, mask_above_count=None,)
 
     return bf, desired_counts
 
