@@ -161,7 +161,7 @@ def sched_argparser() -> argparse.ArgumentParser:
         help="Directory for scheduler snapshots.",
     )
 
-    parser.add_argument("--u_factor", type=float, default=3.)
+    parser.add_argument("--u_scale", type=float, default=3.)
 
     return parser
 
