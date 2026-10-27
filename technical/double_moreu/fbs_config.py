@@ -43,7 +43,7 @@ def generate_qm() -> BaseQueueManager:
     return qm
 
 
-def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
+def get_scheduler(for_simulation=False, u_scale=3.) -> tuple[int, CoreScheduler]:
     """Construct the LSST survey scheduler.
 
     The parameters are not accessible when calling as 'config'.
@@ -318,9 +318,6 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
         blob_survey_params=blob_survey_params,
         safety_mask_params=safety_mask_params,
     )
-
-    # Increase the u by a factor
-    u_scale = 3.
 
     exu_footprints = copy.deepcopy(footprints)
     exu_footprints.set_footprint("u", exu_footprints.footprints[0]*u_scale)

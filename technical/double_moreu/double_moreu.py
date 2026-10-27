@@ -161,6 +161,8 @@ def sched_argparser() -> argparse.ArgumentParser:
         help="Directory for scheduler snapshots.",
     )
 
+    parser.add_argument("--u_factor", type=float, default=3.)
+
     return parser
 
 
@@ -173,13 +175,13 @@ if __name__ == "__main__":
     out_dir = args.out_dir
     fileroot, extra_info = set_run_info(
         dbroot=dbroot,
-        file_end="v5.3.7_",
+        file_end="us%i_v5.3.7_" % args.u_scale,
         out_dir=out_dir,
     )
     years = np.round(args.survey_length / 365.25)
     filename = os.path.join(fileroot + "%iyrs.db" % years)
 
-    nside, scheduler = get_scheduler(for_simulation=True)
+    nside, scheduler = get_scheduler(for_simulation=True, u_scale=args.u_scale)
 
     too_scale = 1.0
     sim_ToOs, event_table = gen_all_events(

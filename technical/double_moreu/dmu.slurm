@@ -25,7 +25,7 @@ source ~/anaconda3/etc/profile.d/conda.sh
 conda activate rubin14
 export OPENBLAS_NUM_THREADS=1
 
-python double_moreu.py
+cat dmu.sh | parallel -j 5
 
 # rm maf.sh
 #  
