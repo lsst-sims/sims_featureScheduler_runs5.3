@@ -19,7 +19,7 @@ class HorseshoeAvoidanceDetailer(BaseDetailer):
     horseshoe baffle.
 
     When a bright star falls within a specific off-axis angular annulus
-    ([1.995, 2.025] degrees by default) from the field of view center,
+    ([1.95, 2.05] degrees by default) from the field of view center,
     reflections off the L3 lens baffle create a characteristic stray light
     artifact known as the "Horseshoe".
 
@@ -93,9 +93,9 @@ class HorseshoeAvoidanceDetailer(BaseDetailer):
         catalog_path=None,
         mag_limit=3.0,
         use_observation_band=True,
-        inner_radius_deg=1.995,
-        outer_radius_deg=2.025,
-        escape_margin_deg=0.005,
+        inner_radius_deg=1.95,
+        outer_radius_deg=2.05,
+        escape_margin_deg=0.015,
         max_offset_deg=None,
         n_ring_bearings=12,
         annotate_note=True,
