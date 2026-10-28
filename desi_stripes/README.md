@@ -12,4 +12,8 @@ Have a survey for observing DESI u-band images:
 * have it count the regular ones
 * blob surveys should ignore this one
 
-removing the template tier so it doesn't use up all the time that would go to 
+removing the template tier so it doesn't use up all the time that would go to the u-band observations
+
+Still need to double check the timing on everything. Potential to start the u-band DESI observaitons later and/or spread them out more if desired.
+
+
