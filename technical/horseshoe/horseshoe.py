@@ -189,7 +189,7 @@ if __name__ == "__main__":
     # The detailer sizes its own offset budget from the annulus width, so no
     # per-preset offset is needed any more.
     nside, scheduler = get_scheduler(for_simulation=True, inner_radius_deg=inner_radius_deg,
-                     outer_radius_deg=outer_radius_deg)
+                                     outer_radius_deg=outer_radius_deg, max_offset_deg=None)
 
     too_scale = 1.0
     sim_ToOs, event_table = gen_all_events(
