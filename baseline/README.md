@@ -39,3 +39,4 @@ going to 5.3.6:
 
 **Bleeding Edge, not yet final**
 * Setting greedy survey to use any filter at start of night.
+* changed tesselation randomization.
