@@ -32,8 +32,12 @@ from horseshoe_detailer import HorseshoeAvoidanceDetailer
 
 def generate_qm(nside=32, inner_radius_deg=1.995,
                 outer_radius_deg=2.025,
-                offset_ra_deg=0.05, offset_dec_deg=0.05) -> BaseQueueManager:
-    """Generate a QueueManager object."""
+                max_offset_deg=None) -> BaseQueueManager:
+    """Generate a QueueManager object.
+
+    `max_offset_deg` caps how far the horseshoe detailer may move a pointing;
+    None lets the detailer size the budget from the annulus width.
+    """
 
     detailer_list = []
     detailer_list.append(detailers.RotspUpdateDetailer())
@@ -41,8 +45,7 @@ def generate_qm(nside=32, inner_radius_deg=1.995,
     # Avoid bright stars
     detailer_list.append(HorseshoeAvoidanceDetailer(inner_radius_deg=inner_radius_deg,
                                                     outer_radius_deg=outer_radius_deg,
-                                                    offset_ra_deg=offset_ra_deg,
-                                                    offset_dec_deg=offset_dec_deg,
+                                                    max_offset_deg=max_offset_deg,
                                                     nside=nside))
 
     bf_list = []
@@ -55,8 +58,8 @@ def generate_qm(nside=32, inner_radius_deg=1.995,
     return qm
 
 
-def get_scheduler(for_simulation=False, inner_radius_deg=None, outer_radius_deg=None,
-                  offset_ra_deg=None, offset_dec_deg=None) -> tuple[int, CoreScheduler]:
+def get_scheduler(for_simulation=False, inner_radius_deg=1.995, outer_radius_deg=2.025,
+                  max_offset_deg=None) -> tuple[int, CoreScheduler]:
     """Construct the LSST survey scheduler.
 
     The parameters are not accessible when calling as 'config'.
@@ -436,8 +439,8 @@ def get_scheduler(for_simulation=False, inner_radius_deg=None, outer_radius_deg=
     ]
 
     qm = generate_qm(nside=nside, inner_radius_deg=inner_radius_deg,
-                     outer_radius_deg=outer_radius_deg, 
-                     offset_ra_deg=offset_ra_deg, offset_dec_deg=offset_dec_deg)
+                     outer_radius_deg=outer_radius_deg,
+                     max_offset_deg=max_offset_deg)
 
     # Combine into CoreScheduler
     scheduler = CoreScheduler(

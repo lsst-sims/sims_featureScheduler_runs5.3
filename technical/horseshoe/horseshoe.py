@@ -182,14 +182,14 @@ if __name__ == "__main__":
 
     inner_radius_deg = [1.995, 1.9, 1.7]
     outer_radius_deg = [2.025, 2.1, 2.2]
-    offset_deg = [0.05, 0.21, 0.51]
 
     inner_radius_deg = inner_radius_deg[args.radius_choice]
     outer_radius_deg = outer_radius_deg[args.radius_choice]
-    offset_deg = offset_deg[args.radius_choice]
 
+    # The detailer sizes its own offset budget from the annulus width, so no
+    # per-preset offset is needed any more.
     nside, scheduler = get_scheduler(for_simulation=True, inner_radius_deg=inner_radius_deg,
-                     outer_radius_deg=outer_radius_deg, offset_ra_deg=offset_deg, offset_dec_deg=offset_deg)
+                     outer_radius_deg=outer_radius_deg)
 
     too_scale = 1.0
     sim_ToOs, event_table = gen_all_events(
