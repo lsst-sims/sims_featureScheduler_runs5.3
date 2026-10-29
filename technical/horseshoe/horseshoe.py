@@ -180,8 +180,8 @@ if __name__ == "__main__":
     years = np.round(args.survey_length / 365.25)
     filename = os.path.join(fileroot + "%iyrs.db" % years)
 
-    inner_radius_deg = [1.995, 1.9, 1.7]
-    outer_radius_deg = [2.025, 2.1, 2.2]
+    inner_radius_deg = [1.95, 1.9, 1.7]
+    outer_radius_deg = [2.05, 2.1, 2.2]
 
     inner_radius_deg = inner_radius_deg[args.radius_choice]
     outer_radius_deg = outer_radius_deg[args.radius_choice]
