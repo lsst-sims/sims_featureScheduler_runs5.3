@@ -8,7 +8,7 @@
 #SBATCH --error=output-%j.txt
 #
 #SBATCH --nodes=1                       # Number of nodes
-#SBATCH --ntasks=10
+#SBATCH --ntasks=13
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=25g
 #
