@@ -301,8 +301,8 @@ def make_rolling_footprints(
         # delay by 0.25 years and single first cadence up
         # roll 1 season earlier
         # flip phase of last season
-        "1 1 U D 1 U D 1 U U 1 1 1 1 1 1 1 1 1",
-        "1 1 D U 1 D U 1 D D 1 1 1 1 1 1 1 1 1",
+        "1 1 U D 1 U D 1 U D 1 1 1 1 1 1 1 1 1",
+        "1 1 D U 1 D U 1 D U 1 1 1 1 1 1 1 1 1",
         "1 U D 1 U D 1 U D 1 1 1 1 1 1 1 1 1 1",
         "1 D U 1 D U 1 D U 1 1 1 1 1 1 1 1 1 1",
         "1 1 U D 1 U D 1 U D 1 1 1 1 1 1 1 1 1",
