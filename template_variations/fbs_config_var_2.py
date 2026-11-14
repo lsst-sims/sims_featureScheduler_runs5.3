@@ -419,6 +419,9 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
 
     # In year 2, use the additional limits to fill small
     # islands that have not yet reached 6 template images
+    band1s = ["u", "g", "y"]
+    band2s = ["u", "g", "y"]
+
     template_surveys_y2 = lsst_surveys.gen_template_surveys(
         template_fp,
         nside=nside,
