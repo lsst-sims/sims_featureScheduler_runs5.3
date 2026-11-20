@@ -6,6 +6,9 @@
 # python fp_mod.py --fp_num 5
 #python fp_mod.py --fp_num 6
 #python fp_mod.py --fp_num 7
-python fp_mod.py --fp_num 8
-python fp_mod.py --fp_num 9
-python fp_mod.py --fp_num 10
+# python fp_mod.py --fp_num 8
+# python fp_mod.py --fp_num 9
+# python fp_mod.py --fp_num 10
+python fp_refine.py --fp_num 1
+python fp_refine.py --fp_num 2
+python fp_refine.py --fp_num 3

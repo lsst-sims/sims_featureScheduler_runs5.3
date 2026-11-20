@@ -594,7 +594,7 @@ class FootprintMod9(NewBase):
             combined_map, fwhm=self.gal_map_smooth_fwhm
         )
 
-        # Construcft a Roman footprint map
+        # Construct a Roman footprint map
         roman_footprint = self.roman_footprint()
 
         indx_below = np.where(combined_map < self.gal_priority_cut)[0]
