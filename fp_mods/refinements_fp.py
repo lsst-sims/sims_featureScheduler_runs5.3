@@ -3,7 +3,7 @@ __all__ = ("Refine1", "Refine2")
 from new_footprints import FootprintMod9
 import numpy as np
 import healpy as hp
-from rubin_scheduler.utils import angular_separation
+from matplotlib.path import Path
 
 
 
@@ -11,36 +11,52 @@ class Refine1(FootprintMod9):
     """Make some minor refinements using FootprintMod9 as a starting point
     """
 
-    def __init__(self, roman_width=3., **kwargs):
+    def __init__(self, bulgy_smooth_fwhm=3., bulgy_smooth_cut=0.1, **kwargs):
         super().__init__(**kwargs)
-        self.roman_width = roman_width
+        self.bulgy_smooth_fwhm = np.radians(bulgy_smooth_fwhm)
+        self.bulgy_smooth_cut = bulgy_smooth_cut
 
     def roman_footprint(self):
 
         in_roman_footprint = np.zeros(hp.nside2npix(self.nside))
 
-        points = [
-            # [100.90, 9.55, 3],
-            # [84.92, -5.71, 3],
-            [266.3, -29, 17],
-            [279, -13, 10],
-            [256, -45, 11],
-            [155, -56.5, 6.5],
-            [172, -62, 5],
-            [190, -65, 5],
-            [210, -64, 5],
-            [242, -58, 6.5],
-            [225, -60, 6.5],
-            [220, -62, 8],  # Bonus manual point to get things connected!
-        ]
-        for point in points:
-            dist = angular_separation(self.ra, self.dec, point[0], point[1])
-            indx = np.where((dist < point[2]/2.))
-            in_roman_footprint[indx] = 1
+        # RGPS wide-field boxes (Galactic l, b in deg; l in [-180, 180]), from
+        # roman-docs.stsci.edu/roman-community-defined-surveys/galactic-plane-survey (691.15 deg^2)
+        rgps_boxes = {
+            "disk": ((-67.0, 50.1), (-2.0, 2.0)),
+            "carina_ext": ((-79.0, -67.0), (-2.5, 2.0)),
+            "bulge_bar_north": ((-10.0, 10.0), (2.0, 6.0)),
+            "bulge_bar_south": ((-10.0, 10.0), (-6.0, -2.0)),
+            "serpens_south": ((26.5, 30.0), (2.0, 4.5)),
+        }
 
-        thin_plane_indx = np.where((np.abs(self.gal_lat) < self.roman_width) &
-                                   (self.gal_lon < 180))[0]
-        in_roman_footprint[thin_plane_indx] = 1
+        # Track if points are in the box
+        # This will probably fail if we try to do things
+        # at the 180,-180 logitude border.
+
+        wrap_lon = self.gal_lon + 0
+        wrap_lon[np.where(wrap_lon > 180)] -= 360
+
+        points_to_check = np.array([wrap_lon, self.gal_lat]).T
+
+        # Loop over each box
+        for key in rgps_boxes:
+            corners = [
+                [rgps_boxes[key][0][0], rgps_boxes[key][1][0]],
+                [rgps_boxes[key][0][1], rgps_boxes[key][1][0]],
+                [rgps_boxes[key][0][1], rgps_boxes[key][1][1]],
+                [rgps_boxes[key][0][0], rgps_boxes[key][1][1]],
+            ]
+            box_path = Path(np.array(corners))
+            indx_path = box_path.contains_points(points_to_check)
+            in_roman_footprint[indx_path] = 1
+
+        smoothed = hp.sphtfunc.smoothing(in_roman_footprint, fwhm=self.bulgy_smooth_fwhm)
+        indx = np.where(smoothed > self.bulgy_smooth_cut)[0]
+        in_roman_footprint[indx] = 1 
+
+        # Do not go far north
+        in_roman_footprint[np.where(self.dec > self.dusty_dec_max)] = 0
 
         return in_roman_footprint
 
