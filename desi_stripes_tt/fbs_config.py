@@ -371,9 +371,10 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
     # (only good seeing visits) and no rolling.
     template_fp = Footprint(survey_start_mjd, sun_ra_start, nside=nside)
     for key in footprints_hp_array.dtype.names:
-        tmp_fp = np.where(footprints_hp_array[key] > 0, 1, np.nan)
+        tmp_fp = footprints_hp_array[key] * np.nan
         # Mask out the lowdust area, so we only get template outside that.
-        tmp_fp[np.where(labels == "lowdust")] = np.nan
+        tmp_fp[np.where(labels == "nes")] = 1
+        tmp_fp[np.where(labels == "bulgy")] = 1
         template_fp.set_footprint(key, tmp_fp)
     # Define template surveys
     template_surveys = lsst_surveys.gen_template_surveys(
