@@ -33,13 +33,15 @@ from horseshoe_detailer import HorseshoeAvoidanceDetailer
 def generate_qm(nside=32, inner_radius_deg=1.995,
                 outer_radius_deg=2.025,
                 max_offset_deg=None,
-                mag_limit=3.0) -> BaseQueueManager:
+                mag_limit=3.0, catalog_path=None) -> BaseQueueManager:
     """Generate a QueueManager object.
 
     `max_offset_deg` caps how far the horseshoe detailer may move a pointing;
     None lets the detailer size the budget from the annulus width.
     `mag_limit` is the limiting magnitude above which a star is considered
     bright enough to avoid (a float, or a per-band dict).
+    `catalog_path` is the bright-star FITS catalog; None uses the detailer
+    default (bright_stars_lsst_mags.fits, falling back to ybsc_v5.fits).
     """
 
     detailer_list = []
@@ -50,6 +52,7 @@ def generate_qm(nside=32, inner_radius_deg=1.995,
                                                     outer_radius_deg=outer_radius_deg,
                                                     max_offset_deg=max_offset_deg,
                                                     mag_limit=mag_limit,
+                                                    catalog_path=catalog_path,
                                                     nside=nside))
 
     bf_list = []
@@ -63,7 +66,8 @@ def generate_qm(nside=32, inner_radius_deg=1.995,
 
 
 def get_scheduler(for_simulation=False, inner_radius_deg=1.995, outer_radius_deg=2.025,
-                  max_offset_deg=None, mag_limit=3.0) -> tuple[int, CoreScheduler]:
+                  max_offset_deg=None, mag_limit=3.0,
+                  catalog_path=None) -> tuple[int, CoreScheduler]:
     """Construct the LSST survey scheduler.
 
     The parameters are not accessible when calling as 'config'.
@@ -445,7 +449,8 @@ def get_scheduler(for_simulation=False, inner_radius_deg=1.995, outer_radius_deg
     qm = generate_qm(nside=nside, inner_radius_deg=inner_radius_deg,
                      outer_radius_deg=outer_radius_deg,
                      max_offset_deg=max_offset_deg,
-                     mag_limit=mag_limit)
+                     mag_limit=mag_limit,
+                     catalog_path=catalog_path)
 
     # Combine into CoreScheduler
     scheduler = CoreScheduler(

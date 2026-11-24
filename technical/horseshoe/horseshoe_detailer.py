@@ -49,7 +49,12 @@ class HorseshoeAvoidanceDetailer(BaseDetailer):
     ----------
     catalog_path : `str` or `Path`, optional
         Path to the FITS catalog containing stars with coordinates and
-        magnitudes. Defaults to `rubin_one_year_output/ybsc_v5.fits`.
+        magnitudes. Defaults to `bright_stars_lsst_mags.fits` next to this
+        file (Hipparcos + YBSC, V-I based LSST magnitudes, see
+        straylight/L3_baffle/make_horseshoe_catalog.py), falling back to
+        `ybsc_v5.fits`. If the catalog has `mag_u` ... `mag_y` columns they
+        are used directly; otherwise the band magnitudes are derived from
+        Vmag, B-V and U-B with linear relations.
     mag_limit : `float` or `dict`, optional
         Limiting magnitude threshold. If a float is passed (default 3.0), the
         same limit is applied across all bands. If a dict is passed (e.g.
@@ -112,10 +117,10 @@ class HorseshoeAvoidanceDetailer(BaseDetailer):
             )
 
         if catalog_path is None:
-            catalog_path = (
-                Path(__file__).resolve().parent
-                / "ybsc_v5.fits"
-            )
+            here = Path(__file__).resolve().parent
+            catalog_path = here / "bright_stars_lsst_mags.fits"
+            if not catalog_path.exists():
+                catalog_path = here / "ybsc_v5.fits"
         self.catalog_path = Path(catalog_path)
 
         self.mag_limit = mag_limit
@@ -205,7 +210,17 @@ class HorseshoeAvoidanceDetailer(BaseDetailer):
             bmv = np.asarray(data["B-V"][mask], dtype=float) if has_bmv else np.full(len(ra_deg), np.nan)
             ub = np.asarray(data["U-B"][mask], dtype=float) if has_ub else np.full(len(ra_deg), np.nan)
 
+            # Precomputed LSST band magnitudes (e.g. bright_stars_lsst_mags.fits,
+            # built with the V-I / Jordi+2006 / the_monster "redcolor" model).
+            # When present they take precedence over the B-V relations below.
+            precomputed = {
+                b: np.asarray(data[f"mag_{b}"][mask], dtype=float)
+                for b in ["u", "g", "r", "i", "z", "y"]
+                if f"mag_{b}" in data.names
+            }
+
         self.star_mags = {"V": vmag}
+        self.mag_source = {}
 
         # ------------------------------------------------------------------
         # Compute band magnitudes (DES / LSST system transformations)
@@ -247,6 +262,17 @@ class HorseshoeAvoidanceDetailer(BaseDetailer):
         mu = np.isfinite(bmv) & np.isfinite(ub)
         umag[mu] = vmag[mu] + bmv[mu] + ub[mu] - 0.7
         self.star_mags["u"] = umag
+
+        # Override with the catalog's precomputed band magnitudes, star by
+        # star where finite (the B-V value above stays as fallback).
+        for b in ["u", "g", "r", "i", "z", "y"]:
+            if b in precomputed:
+                pre = precomputed[b]
+                ok = np.isfinite(pre)
+                self.star_mags[b] = np.where(ok, pre, self.star_mags[b])
+                self.mag_source[b] = "catalog mag_%s (%d/%d stars)" % (b, ok.sum(), len(ok))
+            else:
+                self.mag_source[b] = "B-V relation"
 
         # Convert to 3D Cartesian unit vectors for fast spatial indexing
         self.star_ra_rad = np.radians(ra_deg)
