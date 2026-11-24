@@ -375,6 +375,9 @@ def get_scheduler(for_simulation=False) -> tuple[int, CoreScheduler]:
         # Mask out the lowdust area, so we only get template outside that.
         tmp_fp[np.where(labels == "nes")] = 1
         tmp_fp[np.where(labels == "bulgy")] = 1
+        # Wipe out things like u-band in NES
+        tmp_fp *= footprints_hp_array[key]
+
         template_fp.set_footprint(key, tmp_fp)
     # Define template surveys
     template_surveys = lsst_surveys.gen_template_surveys(

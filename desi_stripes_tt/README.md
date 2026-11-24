@@ -8,3 +8,7 @@ Maybe if we went 3 and 3 on the templates? I dunno, this seems pretty unsaveable
 ----
 
 reconfig so only gathering templates in NES and bulgy. 
+
+oops, got u-band templates in the NES, that's silly
+try and redo
+
