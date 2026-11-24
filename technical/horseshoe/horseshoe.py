@@ -168,6 +168,27 @@ def sched_argparser() -> argparse.ArgumentParser:
         help="Limiting magnitude for bright-star avoidance (stars with "
         "mag <= mag_limit in the observation band are avoided).",
     )
+    parser.add_argument(
+        "--catalog",
+        type=str,
+        default=None,
+        help="Bright-star FITS catalog for the horseshoe detailer. Default: "
+        "bright_stars_lsst_mags.fits (V-I based LSST mags), else ybsc_v5.fits.",
+    )
+    parser.add_argument(
+        "--offset_mode",
+        type=str,
+        default="outward",
+        choices=["outward", "random"],
+        help="Escape direction strategy: 'outward' (default) pushes away from "
+        "the star; 'random' picks a uniform random bearing.",
+    )
+    parser.add_argument(
+        "--escape_margin_deg",
+        type=float,
+        default=0.015,
+        help="Extra margin beyond the annulus edge in degrees (default 0.015).",
+    )
 
     return parser
 
@@ -182,9 +203,19 @@ if __name__ == "__main__":
     # Keep the magnitude out of the filename decimal-point free, e.g.
     # 4.0 -> "4", 4.5 -> "4p5".
     mag_str = ("%g" % args.mag_limit).replace(".", "p")
+    # Tag runs that use a catalog other than the old YBSC + B-V model, so they
+    # do not overwrite the earlier radius_*_mag_* databases.
+    _here = os.path.dirname(os.path.realpath(__file__))
+    _cat = args.catalog or (
+        os.path.join(_here, "bright_stars_lsst_mags.fits")
+        if os.path.exists(os.path.join(_here, "bright_stars_lsst_mags.fits"))
+        else os.path.join(_here, "ybsc_v5.fits")
+    )
+    cat_tag = "" if os.path.basename(_cat) == "ybsc_v5.fits" else "vimag_"
+    mode_tag = "" if args.offset_mode == "outward" else "rand_"
     fileroot, extra_info = set_run_info(
         dbroot=dbroot,
-        file_end="radius_%i_mag_%s_v5.3.7_" % (args.radius_choice, mag_str),
+        file_end="radius_%i_mag_%s_%s%sv5.3.7_" % (args.radius_choice, mag_str, cat_tag, mode_tag),
         out_dir=out_dir,
     )
     years = np.round(args.survey_length / 365.25)
@@ -200,7 +231,10 @@ if __name__ == "__main__":
     # per-preset offset is needed any more.
     nside, scheduler = get_scheduler(for_simulation=True, inner_radius_deg=inner_radius_deg,
                                      outer_radius_deg=outer_radius_deg, max_offset_deg=None,
-                                     mag_limit=args.mag_limit)
+                                     mag_limit=args.mag_limit,
+                                     catalog_path=_cat,
+                                     offset_mode=args.offset_mode,
+                                     escape_margin_deg=args.escape_margin_deg)
 
     too_scale = 1.0
     sim_ToOs, event_table = gen_all_events(

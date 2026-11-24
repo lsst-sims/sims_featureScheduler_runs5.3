@@ -49,7 +49,12 @@ class HorseshoeAvoidanceDetailer(BaseDetailer):
     ----------
     catalog_path : `str` or `Path`, optional
         Path to the FITS catalog containing stars with coordinates and
-        magnitudes. Defaults to `rubin_one_year_output/ybsc_v5.fits`.
+        magnitudes. Defaults to `bright_stars_lsst_mags.fits` next to this
+        file (Hipparcos + YBSC, V-I based LSST magnitudes, see
+        straylight/L3_baffle/make_horseshoe_catalog.py), falling back to
+        `ybsc_v5.fits`. If the catalog has `mag_u` ... `mag_y` columns they
+        are used directly; otherwise the band magnitudes are derived from
+        Vmag, B-V and U-B with linear relations.
     mag_limit : `float` or `dict`, optional
         Limiting magnitude threshold. If a float is passed (default 3.0), the
         same limit is applied across all bands. If a dict is passed (e.g.
@@ -74,6 +79,14 @@ class HorseshoeAvoidanceDetailer(BaseDetailer):
     n_ring_bearings : `int`, optional
         Number of evenly spaced bearings used in the fallback ring search when
         no single push-away direction clears the annulus. Default 12.
+    offset_mode : `str`, optional
+        Escape direction strategy: `"outward"` (default) pushes the field
+        center directly away from the offending star(s) so they exit beyond
+        `outer_radius_deg`; `"random"` picks a uniform random bearing and
+        moves far enough along it that the star exits the annulus (either
+        inward or outward) by at least `escape_margin_deg`.
+    seed : `int`, optional
+        Random seed used when `offset_mode="random"`. Default 42.
     annotate_note : `bool`, optional
         If True, appends `note_tag` to `observation_array['scheduler_note']`
         or `observation_array['note']` when an observation is shifted.
@@ -98,12 +111,21 @@ class HorseshoeAvoidanceDetailer(BaseDetailer):
         escape_margin_deg=0.015,
         max_offset_deg=None,
         n_ring_bearings=12,
+        offset_mode="outward",
+        seed=42,
         annotate_note=True,
         note_tag="hs_avoid",
         nside=DEFAULT_NSIDE,
     ):
         super().__init__(nside=nside)
         self.nside = int(nside)
+
+        if offset_mode not in ("outward", "random"):
+            raise ValueError(
+                f"offset_mode must be 'outward' or 'random', got {offset_mode!r}"
+            )
+        self.offset_mode = offset_mode
+        self.rng = np.random.default_rng(seed)
 
         if self.nside < 1 or (self.nside & (self.nside - 1)) != 0:
             raise ValueError(
@@ -112,10 +134,10 @@ class HorseshoeAvoidanceDetailer(BaseDetailer):
             )
 
         if catalog_path is None:
-            catalog_path = (
-                Path(__file__).resolve().parent
-                / "ybsc_v5.fits"
-            )
+            here = Path(__file__).resolve().parent
+            catalog_path = here / "bright_stars_lsst_mags.fits"
+            if not catalog_path.exists():
+                catalog_path = here / "ybsc_v5.fits"
         self.catalog_path = Path(catalog_path)
 
         self.mag_limit = mag_limit
@@ -133,13 +155,20 @@ class HorseshoeAvoidanceDetailer(BaseDetailer):
 
         # A star anywhere in the annulus is ejected by at most
         # (outer - inner) + margin; double that gives the ring search room to
-        # work when a single push-away direction is blocked.
+        # work when a single push-away direction is blocked. In random mode,
+        # near-tangent directions need up to sqrt((outer + margin)^2 - inner^2).
         if max_offset_deg is None:
-            max_offset_deg = 2.0 * (
-                self.outer_radius_deg
-                - self.inner_radius_deg
-                + self.escape_margin_deg
-            )
+            if self.offset_mode == "random":
+                r_out_m = self.outer_radius_deg + self.escape_margin_deg
+                max_offset_deg = 1.1 * np.sqrt(
+                    max(0.0, r_out_m**2 - self.inner_radius_deg**2)
+                )
+            else:
+                max_offset_deg = 2.0 * (
+                    self.outer_radius_deg
+                    - self.inner_radius_deg
+                    + self.escape_margin_deg
+                )
         self.max_offset_deg = float(max_offset_deg)
         self.max_offset_rad = float(np.radians(self.max_offset_deg))
 
@@ -205,7 +234,17 @@ class HorseshoeAvoidanceDetailer(BaseDetailer):
             bmv = np.asarray(data["B-V"][mask], dtype=float) if has_bmv else np.full(len(ra_deg), np.nan)
             ub = np.asarray(data["U-B"][mask], dtype=float) if has_ub else np.full(len(ra_deg), np.nan)
 
+            # Precomputed LSST band magnitudes (e.g. bright_stars_lsst_mags.fits,
+            # built with the V-I / Jordi+2006 / the_monster "redcolor" model).
+            # When present they take precedence over the B-V relations below.
+            precomputed = {
+                b: np.asarray(data[f"mag_{b}"][mask], dtype=float)
+                for b in ["u", "g", "r", "i", "z", "y"]
+                if f"mag_{b}" in data.names
+            }
+
         self.star_mags = {"V": vmag}
+        self.mag_source = {}
 
         # ------------------------------------------------------------------
         # Compute band magnitudes (DES / LSST system transformations)
@@ -247,6 +286,17 @@ class HorseshoeAvoidanceDetailer(BaseDetailer):
         mu = np.isfinite(bmv) & np.isfinite(ub)
         umag[mu] = vmag[mu] + bmv[mu] + ub[mu] - 0.7
         self.star_mags["u"] = umag
+
+        # Override with the catalog's precomputed band magnitudes, star by
+        # star where finite (the B-V value above stays as fallback).
+        for b in ["u", "g", "r", "i", "z", "y"]:
+            if b in precomputed:
+                pre = precomputed[b]
+                ok = np.isfinite(pre)
+                self.star_mags[b] = np.where(ok, pre, self.star_mags[b])
+                self.mag_source[b] = "catalog mag_%s (%d/%d stars)" % (b, ok.sum(), len(ok))
+            else:
+                self.mag_source[b] = "B-V relation"
 
         # Convert to 3D Cartesian unit vectors for fast spatial indexing
         self.star_ra_rad = np.radians(ra_deg)
@@ -435,6 +485,45 @@ class HorseshoeAvoidanceDetailer(BaseDetailer):
 
         return candidates
 
+    def _random_candidates(self, stars, n_draws=24):
+        """Build random-bearing displacements that clear the annulus by margin.
+
+        For each uniformly drawn bearing `phi`, computes the smallest step `d`
+        along `phi` that moves every offending star outside
+        `[inner_radius - escape_margin, outer_radius + escape_margin]`.
+        """
+        if len(stars) == 0 or self.max_offset_rad <= 0:
+            return []
+
+        seps = np.array([s["sep_rad"] for s in stars])
+        bearings = np.array([s["bearing_rad"] for s in stars])
+        r_out_t = self.outer_radius_rad + self.escape_margin_rad + 1e-6
+        r_in_t = max(0.0, self.inner_radius_rad - self.escape_margin_rad - 1e-6)
+
+        phis = self.rng.uniform(0.0, 2.0 * np.pi, size=n_draws)
+        candidates = []
+        for phi in phis:
+            d_req = 0.0
+            for rho, beta in zip(seps, bearings):
+                cos_dt = np.cos(phi - beta)
+                sin_dt = np.sin(phi - beta)
+                # Outward exit distance along ray phi (always real since r_out_t > rho)
+                disc_out = np.maximum(0.0, rho**2 * (cos_dt**2 - 1.0) + r_out_t**2)
+                d_out = rho * cos_dt + np.sqrt(disc_out)
+                # Inward exit distance along ray phi (possible if ray passes within r_in_t)
+                if cos_dt > 0.0 and abs(rho * sin_dt) <= r_in_t:
+                    disc_in = np.maximum(0.0, rho**2 * (cos_dt**2 - 1.0) + r_in_t**2)
+                    d_in = rho * cos_dt - np.sqrt(disc_in)
+                    d_star = min(d_in, d_out) if d_in > 0.0 else d_out
+                else:
+                    d_star = d_out
+                if d_star > d_req:
+                    d_req = d_star
+            if 0.0 < d_req <= self.max_offset_rad:
+                candidates.append((float(d_req), float(phi)))
+
+        return candidates
+
     def _adaptive_offset(self, orig_ra, orig_dec, obs_band, stars):
         """Find the smallest great-circle move that clears the annulus.
 
@@ -466,7 +555,12 @@ class HorseshoeAvoidanceDetailer(BaseDetailer):
             Diagnostics: realized distance/bearing, whether the annulus was
             successfully cleared, and how many candidates were evaluated.
         """
-        candidates = self._candidate_offsets(stars)
+        if self.offset_mode == "random":
+            candidates = self._random_candidates(stars)
+            if len(candidates) == 0:
+                candidates = self._candidate_offsets(stars)
+        else:
+            candidates = self._candidate_offsets(stars)
 
         if len(candidates) == 0:
             return (
@@ -494,25 +588,31 @@ class HorseshoeAvoidanceDetailer(BaseDetailer):
             trial_ra, trial_dec, bands=[obs_band] * len(candidates)
         )
 
-        # Enforce outward-only escapes. `check_pointings` reports a pointing as
-        # clean whenever no bright star sits in the annulus, which includes
-        # moves that pull an offender *inside* the inner radius -- toward the
-        # science field of view. Require every original offender to end up at
-        # or beyond the outer radius instead.
-        outward = np.ones(len(candidates), dtype=bool)
+        # Enforce escape criterion for original offenders:
+        # - outward mode: every offender must end up >= outer_radius
+        # - random mode: every offender must exit [inner - margin, outer + margin]
+        valid_escape = np.ones(len(candidates), dtype=bool)
         if len(stars) > 0:
             star_idx = np.array([s["star_idx"] for s in stars])
+            r_in_t = self.inner_radius_rad - self.escape_margin_rad + 1e-7
+            r_out_t = self.outer_radius_rad + self.escape_margin_rad - 1e-7
             for k in range(len(candidates)):
-                seps_after = _angular_separation(
-                    trial_ra[k],
-                    trial_dec[k],
-                    self.star_ra_rad[star_idx],
-                    self.star_dec_rad[star_idx],
+                seps_after = np.atleast_1d(
+                    _angular_separation(
+                        trial_ra[k],
+                        trial_dec[k],
+                        self.star_ra_rad[star_idx],
+                        self.star_dec_rad[star_idx],
+                    )
                 )
-                if np.any(np.atleast_1d(seps_after) < self.outer_radius_rad):
-                    outward[k] = False
+                if self.offset_mode == "random":
+                    if np.any((seps_after > r_in_t) & (seps_after < r_out_t)):
+                        valid_escape[k] = False
+                else:
+                    if np.any(seps_after < self.outer_radius_rad):
+                        valid_escape[k] = False
 
-        clean = np.where(~compromised & outward)[0]
+        clean = np.where(~compromised & valid_escape)[0]
         if len(clean) > 0:
             # Candidates are distance-sorted, so the first clean one is the
             # smallest sufficient move.
@@ -671,7 +771,7 @@ class HorseshoeAvoidanceDetailer(BaseDetailer):
         else:
             print(f"  Magnitude Limit:    Mag <= {self.mag_limit} in reference filter")
         print(f"  Annulus:            [{self.inner_radius_deg:.3f}, {self.outer_radius_deg:.3f}] deg")
-        print("  Offset mode:        adaptive (push away from star)")
+        print(f"  Offset mode:        {self.offset_mode}")
         print(f"  Offset budget:      <= {self.max_offset_deg:.4f} deg")
         print(f"  Escape margin:      {self.escape_margin_deg:.4f} deg")
         dists = [
