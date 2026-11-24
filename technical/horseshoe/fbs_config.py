@@ -33,7 +33,9 @@ from horseshoe_detailer import HorseshoeAvoidanceDetailer
 def generate_qm(nside=32, inner_radius_deg=1.995,
                 outer_radius_deg=2.025,
                 max_offset_deg=None,
-                mag_limit=3.0, catalog_path=None) -> BaseQueueManager:
+                mag_limit=3.0, catalog_path=None,
+                offset_mode="outward",
+                escape_margin_deg=0.015) -> BaseQueueManager:
     """Generate a QueueManager object.
 
     `max_offset_deg` caps how far the horseshoe detailer may move a pointing;
@@ -53,6 +55,8 @@ def generate_qm(nside=32, inner_radius_deg=1.995,
                                                     max_offset_deg=max_offset_deg,
                                                     mag_limit=mag_limit,
                                                     catalog_path=catalog_path,
+                                                    offset_mode=offset_mode,
+                                                    escape_margin_deg=escape_margin_deg,
                                                     nside=nside))
 
     bf_list = []
@@ -67,7 +71,8 @@ def generate_qm(nside=32, inner_radius_deg=1.995,
 
 def get_scheduler(for_simulation=False, inner_radius_deg=1.995, outer_radius_deg=2.025,
                   max_offset_deg=None, mag_limit=3.0,
-                  catalog_path=None) -> tuple[int, CoreScheduler]:
+                  catalog_path=None, offset_mode="outward",
+                  escape_margin_deg=0.015) -> tuple[int, CoreScheduler]:
     """Construct the LSST survey scheduler.
 
     The parameters are not accessible when calling as 'config'.
@@ -450,7 +455,9 @@ def get_scheduler(for_simulation=False, inner_radius_deg=1.995, outer_radius_deg
                      outer_radius_deg=outer_radius_deg,
                      max_offset_deg=max_offset_deg,
                      mag_limit=mag_limit,
-                     catalog_path=catalog_path)
+                     catalog_path=catalog_path,
+                     offset_mode=offset_mode,
+                     escape_margin_deg=escape_margin_deg)
 
     # Combine into CoreScheduler
     scheduler = CoreScheduler(
