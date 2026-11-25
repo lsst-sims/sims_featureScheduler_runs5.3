@@ -16,7 +16,6 @@ if __name__ == "__main__":
 
         outfile = filename.replace("10yrs", "2yrs")
         con = sqlite3.connect(outfile)
-        df.to_sql(observations, con)
+        df.to_sql("observations", con)
         con.close()
 
-        
